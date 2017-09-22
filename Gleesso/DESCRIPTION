@@ -1,0 +1,16 @@
+Package: Gleesso
+Title: Graphical Lasso models for ecological network inference between MetaGenomic Species
+Version: 0.0.0.9000
+Authors@R: person("Hanna", "Julienne", email = "hanna.julienne@inra.fr", role = c("aut", "cre"))
+Description: Infer graphical lasso models on Metagenomic Species abundances. The package also provides utilities to produce a network representation of the model. This network is used to detect MetaGenomic Species community.
+Depends: R (>= 3.2.3),
+	rgexf,
+	data.table,
+	SpiecEasi,
+	igraph,
+	huge,
+	ggplot2
+License: https://cran.r-project.org/web/licenses/GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
