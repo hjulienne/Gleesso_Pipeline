@@ -1,9 +1,7 @@
-
-
 #' @title Pipeline launcher
 #' @description
 #'Launching the complete glasso analysis (data prep,  graph inference, community detection, community abundances computation)
-#' Warning : folder shouldn't be indicated with an / at the end 
+#' Warning : folder shouldn't be indicated with an / at the end
 #' @param data_folder : where the community abundance table will be written
 #' @param MGS_file: The Metagenomic species abundance file in the RDS format
 #' @param model_folder: where to save the graphical Lasso model object (output of the spiec.easi function)
@@ -17,7 +15,7 @@
 #' @param occurence_treshold: minimum fraction of samples where a species must be present to be taken into account in the analysis
 #' @param abundance_threshold: minimum mean abundances for a species to be included in the analysis
 #' @param variability_treshold: The maximum mean variability for graph edge presence. If null, the optimal covariance matrix will correspond to a variability of 0.05
-#' @param analysis_step: At which step the analysis should be started (0: from scratch, 1: model inferences, 2: save gephi network, 3: Community detection). If NULL (default), the step will be infered from the files present in the output folders. Use analysis_step=0 to force computation from scratch. 
+#' @param analysis_step: At which step the analysis should be started (0: from scratch, 1: model inferences, 2: save gephi network, 3: Community detection). If NULL (default), the step will be infered from the files present in the output folders. Use analysis_step=0 to force computation from scratch.
 #' @param species_mode : should the graph inference be done on MGS (FALSE) or with MGS of the same specied merged togethere (TRUE)
 #' @export
 Gleesso_pipeline <- function(data_folder,
@@ -65,7 +63,7 @@ Gleesso_pipeline <- function(data_folder,
         }
     }
     ##Compute steps if undone#
-    ## 
+    ##
     print("Starting Gleesso analysis for:")
     print("#################   "+tag_model+"_"+ tag_graph+"   #################")
     print("At analysis step :"+ as.character(analysis_step))
@@ -84,13 +82,13 @@ Gleesso_pipeline <- function(data_folder,
     {
         taxo_by_species <- generate_annotation_CAG_level(taxo_mgs)
         abund_by_species <-  abund_mgs
-        
+
     }
        fout = data_folder+ "/taxo_by_species.rds"
         saveRDS(object = taxo_by_species, file = fout)
         fout = data_folder+ "/abund_by_species.rds"
         saveRDS(object = abund_by_species, file = fout)
-  
+
     }
     else
     {
@@ -99,13 +97,13 @@ Gleesso_pipeline <- function(data_folder,
         fout = data_folder+ "/abund_by_species.rds"
         abund_by_species <- readRDS(fout)
     }
-    
-    
+
+
     # Compute Glasso model
     if(analysis_step <= 1)
     {
         fout = model_folder + "/glasso_model_" + tag_model+ ".gl"
-        Compute_graph(abund_by_species, contrast_vector, fout, nlambda=nlambda, lambda.min.ratio=lambda.min.ratio, abundance_treshold = abundance_treshold, occurence_treshold = occurence_treshold)       
+        Compute_graph(abund_by_species, contrast_vector, fout, nlambda=nlambda, lambda.min.ratio=lambda.min.ratio, abundance_treshold = abundance_treshold, occurence_treshold = occurence_treshold)
     }
 
     # save and write network
@@ -122,12 +120,12 @@ Gleesso_pipeline <- function(data_folder,
         community_abundance <- Compute_community_abondance(Nodes, abund_by_species, taxo_by_species)
         saveRDS( community_abundance, file= fout)
 #### Add community tagging ####
-        
+
         Nodes_tg = Tag_community_names(Com_tab = community_abundance, Nodes)
         fout = graph_folder + "/graph_" + tag_model + tag_graph+ "_community_tagged"
         saveRDS(Nodes_tg, file = fout )
         generate_graph_from_tables(fout, Nodes_tg, fin_glasso,  variability_treshold = variability_treshold)
-       
+
     }
     print("########Ending Gleesso analysis##########")
 }
@@ -164,27 +162,27 @@ Compute_graph <- function(MGS_abundance,
 {
 
     mgs_tp = as.data.frame(MGS_abundance[, which(contrast_vector)])
-  
+
     print("Number of patient in the contrast vector:")
     nb_pat <- dim(mgs_tp)[2]
     print(nb_pat)
     print("mgs_tp")
-   
+
     #Species with sufficient abondance and prevalence to be taken into account
-    
+
     detected_species <- rownames(mgs_tp)[(rowSums(mgs_tp) > (abundance_treshold*nb_pat)) & (apply((mgs_tp) > (abundance_treshold),1,mean ) > occurence_treshold)]
     mgs_tp <- mgs_tp[detected_species,]
 
     print("Number of species:")
     print(dim(mgs_tp)[1])
-    
+
     if(is.null(lambda))
     {
         se.gl.tp = spiec.easi(round(t(mgs_tp)*10^6), method='glasso', icov.select=TRUE, sel.criterion='stars', icov.select.params=list(rep.num=rep.num), nlambda=nlambda, lambda.min.ratio=0.1)
     }
     else
     {
-        se.gl.tp = spiec.easi(round(t(mgs_tp)*10^6), method='glasso', icov.select=TRUE, sel.criterion='stars', icov.select.params=list(rep.num=rep.num), lambda=seq_lambda)#nlambda=20, lambda.min.ratio=0.001)    
+        se.gl.tp = spiec.easi(round(t(mgs_tp)*10^6), method='glasso', icov.select=TRUE, sel.criterion='stars', icov.select.params=list(rep.num=rep.num), lambda=seq_lambda)#nlambda=20, lambda.min.ratio=0.001)
     }
     print(se.gl.tp$opt.lambda)
     print(se.gl.tp$opt.sparsity)
@@ -228,7 +226,7 @@ create_graph <- function(
     se.gl = get(load(file_input))
     #Compute percentage where the MGS is present
     occurence <- round(apply(MGS_by_taxo_species > 10^-7, 1, mean)*100)
-    # Compose abondance of the MGS only in individuals where it is present 
+    # Compose abondance of the MGS only in individuals where it is present
     prevalence <- round(apply(MGS_by_taxo_species , 1, mean_when_present)*100*10^6)
     # remove diagonal terms
     if(is.null(variability_treshold))
@@ -240,32 +238,32 @@ create_graph <- function(
         id_lbd <- max(which(se.gl$variability < variability_treshold))
         var_graph <- se.gl.tp$variability[id_lbd]
         lbd <- se.gl.tp$lambda[id_lbd]
-        icov_mat <- se.gl.tp$icov[[id_lbd]] 
+        icov_mat <- se.gl.tp$icov[[id_lbd]]
         print("|||||||||||||| Graph parameters |||||||||||||||" )
         print("Lambda: " + as.character(lbd))
         print("Variability: " + as.character(var_graph))
         print('|||||||||||||||||||||||||||||||||||||||||||||||')
     }
-    
+
     icov_mat = as.matrix(icov_mat)
     diag(icov_mat) = 0
     nodes_cag = colnames(se.gl$data)# useful only in CAG mode (not in species aggregation mode)
-    
+
     cnames <- sapply(species_taxo[colnames(se.gl$data), "annot"], remove_xml_char)
 
         dimnames(icov_mat) = list(cnames, cnames)
- 
+
     tnames <- sapply(rownames(species_taxo), remove_xml_char)
     rownames(species_taxo) <- tnames
-    
+
     ig.gl <- igraph::graph.adjacency(as.matrix(-icov_mat), weighted=TRUE, mode='min')
-    igraph::E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6) 
-    igraph::E(ig.gl)[weight > 0]$color <- adjustcolor('darkslateblue', alpha.f=0.6) 
+    igraph::E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6)
+    igraph::E(ig.gl)[weight > 0]$color <- adjustcolor('darkslateblue', alpha.f=0.6)
 
     #"Out" rule on a bacteria
     Nodes <- data.frame(ID = c(1:igraph::vcount(ig.gl)), NAME = igraph::V(ig.gl)$name)
     edges <- as.data.frame(igraph::get.edges(ig.gl, 1:igraph::ecount(ig.gl)))
-    
+
     if(community==TRUE)
     {
         con.comp <- igraph::clusters(ig.gl)
@@ -274,11 +272,11 @@ create_graph <- function(
         pos.grph <- igraph::delete.edges(ig.gl, which(igraph::E(ig.gl)$weight < 0 ))
 
         print("###### Computing other community algorithm ######")
-        
+
         btw_com <- igraph::edge.betweenness.community(pos.grph,weights = igraph::E(pos.grph)$weight)
         walktrap.comm <- opt_walktrap(pos.grph) #walktrap.community(pos.grph, weight = E(pos.grph)$weight)
 
-        
+
         print("##### Modularity Walktrap:")
         print(igraph::modularity(walktrap.comm), weights =  igraph::E(pos.grph)$weight)
 
@@ -287,11 +285,11 @@ create_graph <- function(
 
         igraph::V(ig.gl)[walktrap.comm$names]$walk_com <- walktrap.comm$membership
         walktrap.comm <- igraph::walktrap.community(pos.grph, weight = -igraph::E(pos.grph)$weight)
-        
+
         nodes_viz_att <- data.frame(
             occurence = occurence[colnames(se.gl$data)],
             abondance = prevalence[colnames(se.gl$data)],
-            species =  sapply(species_taxo[nodes_cag,]$species, remove_xml_char), 
+            species =  sapply(species_taxo[nodes_cag,]$species, remove_xml_char),
             genus = species_taxo[nodes_cag,]$genus,
             family = species_taxo[nodes_cag,]$family,
             phylum = species_taxo[nodes_cag,]$phylum,
@@ -300,14 +298,14 @@ create_graph <- function(
                                         # connected_component = con.comp$membership,
                                         # spinglass_community = V(ig.gl)$spin_com,
                                         # betweness_community = V(ig.gl)$bet_com,
-            walktrap_community = igraph::V(ig.gl)$walk_com  
+            walktrap_community = igraph::V(ig.gl)$walk_com
         )
          # get optimized spinglass community
         if(spinglass_opt == TRUE)
         {
             spin_com <- opt_spinglass_com(con.grph, mod_rep, nspins)
             V(ig.gl)[spin_com$names]$spin_com <- spin_com$membership
-            
+
             nodes_viz_att['spinglass_community'] = igraph::V(ig.gl)$spin_com
         }
     }
@@ -316,7 +314,7 @@ create_graph <- function(
         nodes_viz_att <- data.frame(
             occurence = occurence[colnames(se.gl$data)],
             abondance = prevalence[colnames(se.gl$data)],
-            species =  sapply(species_taxo[nodes_cag,]$species, remove_xml_char), 
+            species =  sapply(species_taxo[nodes_cag,]$species, remove_xml_char),
             genus =  species_taxo[nodes_cag,]$genus,
             phylum = species_taxo[nodes_cag,]$phylum,
             class = species_taxo[nodes_cag,]$class,
@@ -334,9 +332,9 @@ create_graph <- function(
     {
         nodes_viz_att <- cbind(nodes_viz_att, additional_info)
     }
-    #  E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6) 
+    #  E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6)
     #  E(ig.gl)[weight > 0]$color <- adjustcolor('darkslateblue', alpha.f=0.6)
-    
+
     edges_viz_att <- data.frame(WGH = abs(igraph::E(ig.gl)$weight), COLOR = igraph::E(ig.gl)$color)
     row.names(nodes_viz_att) <- remove_xml_char(row.names(nodes_viz_att))
     Nodes$NAME <- remove_xml_char(Nodes$NAME)
@@ -344,9 +342,9 @@ create_graph <- function(
     write.csv(nodes_viz_att, file=paste(file_output,"_nodes.csv", sep=''))
     write.csv(edges_viz_att, file=paste(file_output,"_edges.csv", sep=''))
     saveRDS(ig.gl, file = paste(file_output, '.gl.RDS', sep=""))
-    
+
     rgexf::write.gexf(output= paste(file_output, '.gexf', sep=""), nodes = Nodes, edges = edges, edgesWeight =round(abs(E(ig.gl)$weight)*100+1), nodesAtt = nodes_viz_att, edgesAtt = edges_viz_att, defaultedgetype = "undirected")
-    
+
     return(nodes_viz_att)
 }
 
@@ -369,7 +367,7 @@ Compute_community_abondance <- function(Nodes,
 {
 # Beware that the row names of the node table must be species name
     abundance_by_comm <- data.frame(row.names = c( 'Community_composition',"Community_pval", colnames(abundance), "community_index"))
-                                      
+
     abundance = as.data.frame(abundance)
     names(abundance) = sapply(names(abundance), remove_xml_char)
 
@@ -377,44 +375,44 @@ Compute_community_abondance <- function(Nodes,
     {
         if (!is.na(spc)){
             MGS_in_c <- rownames(Nodes[which(Nodes[ ,community_kind]==spc),])
-        
-            
+
+
             if(length(MGS_in_c) > 1)
             {
-                
+
                 print('#############################')
                 print('#######  Community  #########')
-                                
+
                 MGS_max <- MGS_in_c[which.max(apply(abundance[MGS_in_c, ], 1, mean, na.rm=TRUE))]
                 c <- sort(apply(abundance[MGS_in_c, ], 1, mean), decreasing=TRUE)
-                                
+
                 MGS_rpr <- get_rpr(c)
                 print(MGS_rpr)
                 abundance_by_comm[MGS_rpr] = 0
                 abundance_by_comm["community_index", MGS_rpr] = spc
                 #_ get track of the integer index of the community for further calculation
-                
+
                 abundance_by_comm[setdiff(row.names(abundance_by_comm), c('Community_composition', "Community_pval", "community_index") ), MGS_rpr] <- apply(abundance[MGS_in_c,], 2, sum, na.rm=TRUE)
-                
+
                 abundance_by_comm[1, MGS_rpr] <- paste(MGS_in_c, collapse='-')
-                
+
                 print("Community number")
                 print(spc)
                 print("represented by:")
                  print(MGS_rpr)
                  print("complete list")
                  print(MGS_in_c)
-                if(!is.null(contrast)){  
+                if(!is.null(contrast)){
                     ab_h <- as.numeric(as.character(abundance_by_comm[(which(contrast)+2),  MGS_rpr]))
                     ab_l <- as.numeric(as.character(abundance_by_comm[(which(!contrast)+2), MGS_rpr]))
-                
+
                     t <- wilcox.test(ab_h,ab_l) # log10(ab_h+10^(-8)), log10(ab_l+10^(-8)))
                                         # p_val_by_comm[MGS_rpr] <- signif(t$p.value, 3)
                  #   print(t)
                                         # print(wilcox.test(abundance[which(contrast), MGS_max],abundance[which(contrast),MGS_max]))
                                         # if(t$p.value < 0.05){ sign_com <- c(sign_com, MGS_rpr)}
                     abundance_by_comm["Community_pval", MGS_rpr] <- t$p.value
-                }       
+                }
             }
         }
     }
@@ -430,7 +428,7 @@ Compute_community_abondance <- function(Nodes,
 
 #' generate_graph_from_tables
 #' create a gephi graph from a Nodes table and Glasso model object
-generate_graph_from_tables <- function(fout, nodes_viz_att, fgraph_model, variability_treshold=NULL) 
+generate_graph_from_tables <- function(fout, nodes_viz_att, fgraph_model, variability_treshold=NULL)
 {
     se.gl = get(load(fgraph_model))
     if(is.null(variability_treshold))
@@ -443,7 +441,7 @@ generate_graph_from_tables <- function(fout, nodes_viz_att, fgraph_model, variab
        var_graph <- se.gl$variability[id_lbd]
        lbd <- se.gl$lambda[id_lbd]
        print(lbd)
-       icov_mat <- se.gl$icov[[id_lbd]] 
+       icov_mat <- se.gl$icov[[id_lbd]]
        print("|||||||||||||| Graph parameters |||||||||||||||" )
        print(paste("Lambda:",as.character(lbd)))
        print(paste("Variability: " , as.character(var_graph)))
@@ -455,24 +453,24 @@ generate_graph_from_tables <- function(fout, nodes_viz_att, fgraph_model, variab
 
     cnames <- sapply(colnames(se.gl$data), remove_xml_char)
     dimnames(icov_mat) = list(cnames, cnames)
-    
+
     ig.gl <- graph.adjacency(Matrix(-icov_mat), weighted=TRUE, mode='min')
-    E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6) 
-    E(ig.gl)[weight > 0]$color <- adjustcolor('darkslateblue', alpha.f=0.6) 
-    
+    E(ig.gl)[weight < 0]$color <- adjustcolor('coral', alpha.f=0.6)
+    E(ig.gl)[weight > 0]$color <- adjustcolor('darkslateblue', alpha.f=0.6)
+
 # "Out" rule on a bacteria
     Nodes <- data.frame(ID = c(1:vcount(ig.gl)), NAME = V(ig.gl)$name)
     edges <- as.data.frame(get.edges(ig.gl, 1:ecount(ig.gl)))
 
     edges_viz_att <- data.frame(WGH = abs(E(ig.gl)$weight), COLOR = E(ig.gl)$color)
-    
+
     write.gexf(output= paste(fout, '.gexf', sep=""), nodes = Nodes, edges = edges, edgesWeight =round(abs(E(ig.gl)$weight)*100+1), nodesAtt = nodes_viz_att, edgesAtt = edges_viz_att, defaultedgetype = "undirected")
 }
 
 
                                        #grepl("^[^_]+_2",s
 get_rpr <- function(c)
-{ 
+{
     s= ""
     i = 1
     for(n in names(c))
@@ -482,7 +480,7 @@ get_rpr <- function(c)
             i = i+1
         }
         if(i>2) break
-    }    
+    }
     if(nchar(s)==0)
     {s=names(c)[1]}
     return(s)
@@ -522,7 +520,7 @@ opt_spinglass_com <- function(con.grph, mod_rep, nspins)
         err_mod[i] <- sd(mod_tmp)/sqrt(mod_rep)
         i = i+1
     }
-    
+
     p = ggplot2::qplot(seq_spin,mod_spin) + geom_errorbar(aes(x=seq_spin, ymin=mod_spin-err_mod, ymax=mod_spin+err_mod), width=0.25)
     #print(p)
     best_ns <-  seq_spin[which.max(mod_spin)]
@@ -549,21 +547,21 @@ opt_walktrap <- function(pos.grph, lpath_range=seq(2,25,1), mod_rep=10)
     {
         walk_com <- walktrap.community(pos.grph, weight = E(pos.grph)$weight, steps=ns)
         mod_spin[i] <- modularity(walk_com, weights=E(pos.grph)$weight)
-                
+
         # print("number of steps:")
-        # print(ns)       
+        # print(ns)
         # print("modularity")
         # print(mod_spin[i])
-        
+
         i = i+1
     }
-    
+
     p = qplot(lpath_range,mod_spin) #+ geom_errorbar(aes(x=lpath_range, ymin=mod_spin-err_mod, ymax=mod_spin+err_mod), width=0.25)
                                         #  print(p)
     best_ns <-  lpath_range[which.max(mod_spin)]
                                         # compute  walktrap community for the best setting in term of modularity
     walk_com <-  walktrap.community(pos.grph, weight = E(pos.grph)$weight, steps=ns)
-  
+
     print("best number of steps:")
     print(best_ns)
     print("best modularity")
@@ -576,7 +574,7 @@ opt_walktrap <- function(pos.grph, lpath_range=seq(2,25,1), mod_rep=10)
 remove_xml_char <- function(x){return(gsub('[&"<>/-]', ' ', x))}
 
 get_abundance_by_taxo_species <- function(abundance, taxo)
-{    
+{
     taxo[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level)),'annot'] = paste(taxo[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level)),'annot'], rownames(taxo)[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level))])
     taxo[is.na(taxo$Taxo_level),'annot'] = rownames(taxo)[is.na(taxo$Taxo_level)]
 
@@ -598,19 +596,19 @@ get_abundance_by_taxo_species <- function(abundance, taxo)
 
 generate_annotation <- function(taxo)
 {
-    
+
     taxo[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level)),'annot'] = paste(
         taxo[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level)),'annot'],
         rownames(taxo)[which(as.character(taxo$Taxo_level) !='species' & !is.na(taxo$Taxo_level))])
     taxo[is.na(taxo$Taxo_level), 'annot'] = rownames(taxo)[is.na(taxo$Taxo_level)]
     taxo$annot = sapply(taxo$annot, remove_xml_char)
-    
+
     return(taxo)
 }
 
 generate_annotation_CAG_level <- function(taxo)
 {
-    
+
     taxo[,'annot'] = paste(taxo[,'annot'], rownames(taxo))
     taxo$annot = sapply(taxo$annot, remove_xml_char)
     #row.names(taxo) = taxo$annot
@@ -630,7 +628,7 @@ get_taxo_by_species <- function(taxo)
     species_taxo <- as.data.frame(species_taxo)
     species_taxo <- species_taxo[which(!is.na(species_taxo$annot)),]
 
-    rownames(species_taxo) <- species_taxo$annot  
+    rownames(species_taxo) <- species_taxo$annot
     rnames <- sapply(rownames(species_taxo), remove_xml_char)
 
     rownames(species_taxo) <- rnames
@@ -662,11 +660,11 @@ Tag_community_names <-function(Com_tab, Nodes)
 
 
 #' overload '+' operator to allow character strings concatenation
-`+` <- function(e1, e2){ 
-	if (is.character(e1) && is.character(e2)) { 
-		paste(e1,e2,sep="") 
+`+` <- function(e1, e2){
+	if (is.character(e1) && is.character(e2)) {
+		paste(e1,e2,sep="")
 	}
-	else { 
-		base::`+`(e1,e2) 
-	} 
+	else {
+		base::`+`(e1,e2)
+	}
 }
