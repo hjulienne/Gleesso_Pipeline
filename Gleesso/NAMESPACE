@@ -2,5 +2,8 @@
 
 export(Compute_community_abondance)
 export(Compute_graph)
+export(Gleesso_bootstrap)
 export(Gleesso_pipeline)
+export(Robust_table_community)
+export(concordance_table)
 export(create_graph)

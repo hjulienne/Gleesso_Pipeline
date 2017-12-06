@@ -10,7 +10,6 @@
 #' @param ... : parameters to pass to the
 #' @export
 
-
 Gleesso_bootstrap <- function(N_bootstrap,
                               fraction,
                               model_tag,
