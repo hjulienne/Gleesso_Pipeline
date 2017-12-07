@@ -2,16 +2,14 @@
 % Please edit documentation in R/Bootstrap_community.R
 \name{stability_index_converter}
 \alias{stability_index_converter}
-\title{#####################}
+\title{stability_index_converter}
 \usage{
 stability_index_converter(graph_list, join_type = "outer")
 }
 \arguments{
 \item{graph_batch}{: a list of graph with walktrap community converted to a ref}
 }
-\details{
-#####################
-############################################################################################
+\description{
 stability_index function look at the walktrap community of each species in a list of graph
 then compute the number of graph where the species as been attributed to the same community
 }

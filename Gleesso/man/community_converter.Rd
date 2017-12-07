@@ -2,10 +2,7 @@
 % Please edit documentation in R/Bootstrap_community.R
 \name{community_converter}
 \alias{community_converter}
-\title{#######
-Community converter function take to two nodes table as argument
-and give a translation of each community to the other graph based on jacquart distance
-If I may, it is automated community translation}
+\title{community_converter}
 \usage{
 community_converter(nodes_graph1, nodes_graph2, join_type = "inner")
 }
@@ -15,7 +12,6 @@ community_converter(nodes_graph1, nodes_graph2, join_type = "inner")
 \item{nodes_graph2}{is the table of nodes of the second graph}
 }
 \description{
-#######
 Community converter function take to two nodes table as argument
 and give a translation of each community to the other graph based on jacquart distance
 If I may, it is automated community translation

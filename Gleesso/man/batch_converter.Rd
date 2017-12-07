@@ -9,13 +9,9 @@ batch_converter(graph_batch, graph_ref)
 \arguments{
 \item{graph_batch}{: a list of graph to convert}
 
-\item{graph_ref}{: the reference used for conversion
-Putting graph reference at the list of graph}
+\item{graph_ref}{: the reference used for conversion}
 }
 \description{
 convert community (give the same indice) of a batch
 of graphs to the community of a reference graph
-}
-\details{
-#################################################
 }

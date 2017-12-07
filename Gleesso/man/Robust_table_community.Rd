@@ -9,13 +9,21 @@ Robust_table_community(graphs_folder, alluvial_diagnostic_file, taxo,
   silhouette_treshold = 0.1)
 }
 \arguments{
-\item{graphs_folder}{: folder where all graphs are placed (with the / at the end ^^)}
+\item{graphs_folder}{: folder where all graphs are placed (with the / at the end please ^^)}
 
 \item{N_alluvial}{: number of graph to represent on a graph}
 
 \item{alluvial_diagnostic}{: file name for the alluvial graph}
 }
+\value{
+a list object containing the following elements:
+staby : table of species stability with community assignation for all graphs
+stab_n_taxo : table of species stability and taxonomy
+Robust_community_stability_[...] : abundance of communities for species with a stability above the specified treshold
+Robust_community_stability_[...]_silhouette_[...] : idem but species also have a silhouette above a specified treshold
+}
 \description{
 Compute the stability of
-species community attribution from bootstraped graphs
+species community attribution from bootstraped graphs and community
+table abondance for robust attribution.
 }

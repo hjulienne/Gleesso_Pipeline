@@ -3,10 +3,14 @@
 #' @description Compute the stability of
 #' species community attribution from bootstraped graphs and community
 #' table abondance for robust attribution.
-#' @param graphs_folder : folder where all graphs are placed (with the / at the end ^^)
-
+#' @param graphs_folder : folder where all graphs are placed (with the / at the end please ^^)
 #' @param alluvial_diagnostic : file name for the alluvial graph
 #' @param N_alluvial : number of graph to represent on a graph
+#' @return a list object containing the following elements:
+#' staby : table of species stability with community assignation for all graphs
+#' stab_n_taxo : table of species stability and taxonomy
+#' Robust_community_stability_[...] : abundance of communities for species with a stability above the specified treshold
+#' Robust_community_stability_[...]_silhouette_[...] : idem but species also have a silhouette above a specified treshold
 #' @export
 
 Robust_table_community <- function(graphs_folder,
@@ -35,9 +39,8 @@ Robust_table_community <- function(graphs_folder,
 
   id_repr_allu = sample(Ngraphs, N_alluvial)
   graph_labels = c("graph reference", paste("bootstrap", id_repr_allu))
-
   svg(alluvial_diagnostic_file)
-  print("#######################")
+  print("#########################")
   print("# Plotting alluvial plot")
   parrallel_coord_community(graphbatch_converted[c("graph_reference", names(graphbatch_converted)[id_repr_allu])], graph_labels, join_type = join_type)
   dev.off()
@@ -45,22 +48,17 @@ Robust_table_community <- function(graphs_folder,
   staby = stability_index_converter(graphbatch_converted, join_type = join_type)
   stab_n_taxo = cbind(staby[!grepl("graph",names(staby))],
                 taxo[row.names(staby), c("genus","family","order","class", "superkingdom", "superkingdom")])
-  result_bundle = list(stability = staby)
+
   # Compute silhouette based on the walktrap distance between nodes
   graph_all_fn = files_all[grep("all_samples.gl.RDS$", files_all)]
   gphref_igraph = readRDS(paste0(graphs_folder, graph_all_fn))
   pos.grph = delete.edges(gphref_igraph, which(E(gphref_igraph)$weight < 0))
-
   print("walktrap distance computing")
   Dwkt = walktrap_distance(pos.grph, 9)
   Swkt = Silhouette_to_community(Dwkt, graphbatch_converted[["graph_reference"]])
   stab_n_taxo["Silhouette_walktrap"] = Swkt[row.names(stab_n_taxo),3]
-  result_bundle[["stab_n_taxo"]] = stab_n_taxo
-
   Nodes_all = graphbatch_converted[["graph_reference"]]
-
   # Select nodes that are attributed to the same community more than stab treshold
-
   Stab_Nodes = Nodes_all[row.names(stab_n_taxo)[which(stab_n_taxo$Stability_score >= stability_treshold)],]
   community_table_stab = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
   name_stab_com = paste0("Robust_community_stability_", stability_treshold)
@@ -69,6 +67,7 @@ Robust_table_community <- function(graphs_folder,
   community_table_stab_n_fat = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
   name_stab_n_fat_com = paste0("Robust_community_stability_", stability_treshold, "_silhouette_", Silhouette_walktrap)
 
+  result_bundle = list(stability = staby)
   result_bundle[["stab_n_taxo"]] = stab_n_taxo
   result_bundle[[name_stab_com]] = community_table_stab
   result_bundle[[name_stab_n_fat_com]] = community_table_stab_n_fat
@@ -130,7 +129,8 @@ concordance_table <- function(nlist, Graph_tags, join_type= "outer")
     return(res_comparison)
 }
 
-#'#######################################################
+#' @title parrallel_coord_community
+#' @description Alluvial plot of concordance of community
 #' Draw a parrallel coord graph of community belonging for
 #' different graph object. Enable one to compare and understand the stability or discrepancy
 #' between graph community
@@ -138,8 +138,14 @@ concordance_table <- function(nlist, Graph_tags, join_type= "outer")
 #' @param Graph_tags: a sequence of str which are the name of nodes tables of graph_node_list
 #' @param measure: the weight attributed to each CAG either "sum" of abundance or "count" of objects
 #' @param color_graph : index of the graph used to color the parallel coordiante plot
-#'###################################
-parrallel_coord_community <- function(graph_node_list,  Graph_tags,  measure= "sum_ab", color_graph = 1,  join_type= "inner" )
+#' @param join_type : take the intersection or the union of species?
+#' @export
+
+parrallel_coord_community <- function(graph_node_list,
+   Graph_tags,
+     measure= "sum_ab",
+      color_graph = 1,
+       join_type= "inner" )
 {
     N_graph <- length(graph_node_list)
     pcd_agg <- concordance_table(graph_node_list, Graph_tags, join_type= join_type)[['species_community_cohort_aggregated']]
@@ -162,11 +168,13 @@ parrallel_coord_community <- function(graph_node_list,  Graph_tags,  measure= "s
 
 
 
-################################################
-#' function walktrap_distance reproduce the distance used in the walktrap community detection algorithm
+
+#' @title walktrap_distance
+#' @description reproduce the distance used in the walktrap community detection algorithm
 #' @param pos.graph: an igraph object that contain only positive edges
 #' @param n_steps: number of steps of the random walk on the graph
-#'##############################################
+
+
 walktrap_distance <- function(pos.grph, n_steps)
 {
 # #
@@ -193,56 +201,33 @@ walktrap_distance <- function(pos.grph, n_steps)
     return(Dist_wt)
 }
 
-#'##################################################
-#' Function Distance to community
-#' Compute mean distance of species to all community
+
+
+#' @title Silhouette_to_community
+#' @description
+#' Compute the silhouette cluster metric for all species
 #' @param my_dist : distance matrix of species to all species
-#' @param Nodes_with_com: graph node table containing walktrap community
-#'###################################################
-
-Distance_to_community <- function(my_dist, Nodes_with_com)
-{
-    has_na_com <-  as.integer(any(is.na(Nodes_with_com$walktrap_community)))
-    N_community = length(unique(Nodes_with_com$walktrap_community)) - has_na_com
-    N_bacteria = length(row.names(Nodes_with_com))
-    print(paste(N_community, N_bacteria))
-    mat_score = matrix(rep(0, N_bacteria*N_community), ncol=N_community)
-    commu = sort(as.character(unique(Nodes_with_com$walktrap_community[as.character(Nodes_with_com$walktrap_community) != 'NA'])))
-
-    dist_cluster <- data.frame(cbind(as.character(Nodes_with_com$walktrap_community), mat_score), row.names = row.names(Nodes_with_com), stringsAsFactors = FALSE)
-    names(dist_cluster) <- c("community", commu)
-
-    n1 <- dimnames(my_dist)[[1]]
-
-    for(bac in row.names(Nodes_with_com))
-    {
-        dist_cluster[bac, -1] = tapply(my_dist[bac,], Nodes_with_com[n1,]$walktrap_community, mean)
-    }
-    return(dist_cluster)
-}
+#' @param Nodes_with_com : Nodes table with a walktrap_community attribution
 
 
 Silhouette_to_community <- function( my_dist, Nodes_with_com)
 {
     cl_community = as.numeric(as.factor(as.character(Nodes_with_com$walktrap_community)))
-    #'  cl_community = Nodes_with_com$walktrap_community
-    #'  converter = as.data.frame(t(as.data.frame(strsplit(unique(paste(Nodes_with_com$walktrap_community, cl_community, sep="_")), "_"))), stringAsFactors = FALSE)
-    #'  row.names(converter) = converter$V2
 
     SDist = silhouette(cl_community, dmatrix = my_dist)
     S_distdt = as.data.frame(SDist[,1:3], row.names=row.names(Nodes_with_com))
-    #' S_distdt[,1] = converter[SDist[,1], 1]
-    #' S_distdt[,2] = converter[SDist[,2], 1]
+
     return(S_distdt)
 }
 
-#'#######
+#' @title community_converter
+#' @description
 #' Community converter function take to two nodes table as argument
 #' and give a translation of each community to the other graph based on jacquart distance
 #' If I may, it is automated community translation
 #' @param nodes_graph1 is the table of nodes with the walktrap column properly filled
 #' @param nodes_graph2 is the table of nodes of the second graph
-################
+
 community_converter <- function(nodes_graph1,
                                 nodes_graph2,
                                 join_type = "inner")
@@ -300,14 +285,14 @@ community_converter <- function(nodes_graph1,
                 convertedtonum2 = convertedtonum2))
 }
 
-#'#################################################
+
 #' @title batch community converter
 #' @description
 #' convert community (give the same indice) of a batch
 #' of graphs to the community of a reference graph
 #' @param graph_batch : a list of graph to convert
 #' @param graph_ref : the reference used for conversion
-###################################################
+
 batch_converter <- function(graph_batch, graph_ref)
 {
     N_graph <- length(graph_batch)
@@ -326,23 +311,19 @@ batch_converter <- function(graph_batch, graph_ref)
     graph_ref$walktrap_community = as.numeric(as.factor(graph_ref$walktrap_community))
     graph_ref$walktrap_community[is.na(graph_ref$walktrap_community)] = 0
 
-    #' Putting graph reference at the list of graph
+    # Putting graph reference at the list of graph
     graph_batch[['graph_reference']] = graph_ref
     return(graph_batch)
 }
 
-#'#####################
-#'
-#'
-#'
-#'#####################
 
 
-#'############################################################################################
+#' @title stability_index_converter
+#' @description
 #' stability_index function look at the walktrap community of each species in a list of graph
 #' then compute the number of graph where the species as been attributed to the same community
 #' @param graph_batch : a list of graph with walktrap community converted to a ref
-##############################################################################################
+
 
 stability_index_converter <- function(graph_list, join_type = "outer")
 {

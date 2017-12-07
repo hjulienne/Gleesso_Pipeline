@@ -2,17 +2,15 @@
 % Please edit documentation in R/Bootstrap_community.R
 \name{parrallel_coord_community}
 \alias{parrallel_coord_community}
-\title{#######################################################
-Draw a parrallel coord graph of community belonging for
-different graph object. Enable one to compare and understand the stability or discrepancy
-between graph community}
+\title{parrallel_coord_community}
 \usage{
 parrallel_coord_community(graph_node_list, Graph_tags, measure = "sum_ab",
   color_graph = 1, join_type = "inner")
 }
 \arguments{
-\item{color_graph}{: index of the graph used to color the parallel coordiante plot
-###################################}
+\item{color_graph}{: index of the graph used to color the parallel coordiante plot}
+
+\item{join_type}{: take the intersection or the union of species?}
 
 \item{graph_node_list:}{a sequence of nodes tables with community annotated}
 
@@ -21,7 +19,7 @@ parrallel_coord_community(graph_node_list, Graph_tags, measure = "sum_ab",
 \item{measure:}{the weight attributed to each CAG either "sum" of abundance or "count" of objects}
 }
 \description{
-#######################################################
+Alluvial plot of concordance of community
 Draw a parrallel coord graph of community belonging for
 different graph object. Enable one to compare and understand the stability or discrepancy
 between graph community

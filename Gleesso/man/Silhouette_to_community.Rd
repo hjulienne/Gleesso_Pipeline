@@ -2,18 +2,15 @@
 % Please edit documentation in R/Bootstrap_community.R
 \name{Silhouette_to_community}
 \alias{Silhouette_to_community}
-\title{cl_community = Nodes_with_com$walktrap_community
- converter = as.data.frame(t(as.data.frame(strsplit(unique(paste(Nodes_with_com$walktrap_community, cl_community, sep="_")), "_"))), stringAsFactors = FALSE)
- row.names(converter) = converter$V2
-S_distdt[,1] = converter[SDist[,1], 1]
-S_distdt[,2] = converter[SDist[,2], 1]}
+\title{Silhouette_to_community}
 \usage{
 Silhouette_to_community(my_dist, Nodes_with_com)
 }
+\arguments{
+\item{my_dist}{: distance matrix of species to all species}
+
+\item{Nodes_with_com}{: Nodes table with a walktrap_community attribution}
+}
 \description{
-cl_community = Nodes_with_com$walktrap_community
- converter = as.data.frame(t(as.data.frame(strsplit(unique(paste(Nodes_with_com$walktrap_community, cl_community, sep="_")), "_"))), stringAsFactors = FALSE)
- row.names(converter) = converter$V2
-S_distdt[,1] = converter[SDist[,1], 1]
-S_distdt[,2] = converter[SDist[,2], 1]
+Compute the silhouette cluster metric for all species
 }
