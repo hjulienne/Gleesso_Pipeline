@@ -13,12 +13,19 @@ We implemented the Gleesso pipeline to adapt the SPIEC-EASI pipeline to shotgun 
 
 # Installation
 
-1. Manually install the dependency package SPIEC-EASI : https://github.com/zdk123/SpiecEasi
-2. From an R terminal
+The dependency packages phyloseq and SPIEC-EASI (https://github.com/zdk123/SpiecEasi) need to be manually installed before installing Gleesso. 
+
+The following code lines install both the dependencies and the gleesso package.
+
 ```r
 library(devtools)
+
+source("https://bioconductor.org/biocLite.R")
+biocLite("phyloseq")
+
+install_github("zdk123/SpiecEasi")
+library(SpiecEasi)
 install_github("hjulienne/Gleesso_Pipeline/Gleesso")
-library(Gleesso)
 ```
 
 # Usage example
