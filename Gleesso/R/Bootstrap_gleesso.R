@@ -6,13 +6,13 @@
 #' @param fraction : fraction of the initial dataset that should be drawn to form each bootstrap samples
 #' @param stratifying_vector : a factor vector that represent a class that should be evenly scattered between bootstrap samples
 #' @param Graphs_folder : folder to output all graphs and all bootstrap samples (to keep track of which individual was used in each iteration)
-#' @param model_tag :
+#' @param tag_model :
 #' @param ... : parameters to pass to the
 #' @export
 
 Gleesso_bootstrap <- function(N_bootstrap,
                               fraction,
-                              model_tag,
+                              tag_model,
                               variability_treshold,
                               community_table_folder,
                               model_folder, graph_folder,
@@ -40,13 +40,13 @@ Gleesso_bootstrap <- function(N_bootstrap,
   {
     if(is.null(variability_treshold))
     {
-      tag_graph = paste(c("_", 0.05, "_", i), collapse = "")
+      tag_graph = paste(c("_", 0.05), collapse = "")
 
     }
      else{
-       tag_graph = paste(c("_", variability_treshold, "_", i), collapse = "")
+       tag_graph = paste(c("_", variability_treshold), collapse = "")
      }
-
+    tag_model_m = paste(c(tag_model,"_", i ), collapse = "")
 
     # compute sample to work on :
     if(!is.null(stratifying_vector))
@@ -66,16 +66,17 @@ Gleesso_bootstrap <- function(N_bootstrap,
     boot_vec[boot_samples] = TRUE
     print(tag_graph)
     Gleesso_pipeline(community_table_folder,  MGS_file, taxo_file,
-       model_folder, graph_folder, boot_vec, tag_model= tag_model,
+       model_folder, graph_folder, boot_vec, tag_model= tag_model_m,
         tag_graph=tag_graph,
         variability_treshold=variability_treshold, analysis_step=0, ... )
       }
       # After generating the bootstraps we compute the graph on all samples
       # The graph on all samples (with the maximum statistical )
-      tag_graph = paste(c("_", variability_treshold, "_all_samples"), collapse = "")
+      tag_model_m = paste(c(tag_model,"_all_samples"), collapse = "")
+      tag_graph = paste(c("_", variability_treshold), collapse = "")
       boot_vec = rep(TRUE, N_samples)
       Gleesso_pipeline(community_table_folder,  MGS_file, taxo_file,
-         model_folder, graph_folder, boot_vec, tag_model= tag_model,
+         model_folder, graph_folder, boot_vec, tag_model= tag_model_m,
           tag_graph=tag_graph,
           variability_treshold=variability_treshold, analysis_step=0, ... )
 }

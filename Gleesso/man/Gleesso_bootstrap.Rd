@@ -4,7 +4,7 @@
 \alias{Gleesso_bootstrap}
 \title{bootstrap Gleesso_pipeline}
 \usage{
-Gleesso_bootstrap(N_bootstrap, fraction, model_tag, variability_treshold,
+Gleesso_bootstrap(N_bootstrap, fraction, tag_model, variability_treshold,
   community_table_folder, model_folder, graph_folder, MGS_file, taxo_file,
   stratifying_vector = NULL, ...)
 }
@@ -13,7 +13,7 @@ Gleesso_bootstrap(N_bootstrap, fraction, model_tag, variability_treshold,
 
 \item{fraction}{: fraction of the initial dataset that should be drawn to form each bootstrap samples}
 
-\item{model_tag}{:}
+\item{tag_model}{:}
 
 \item{stratifying_vector}{: a factor vector that represent a class that should be evenly scattered between bootstrap samples}
 

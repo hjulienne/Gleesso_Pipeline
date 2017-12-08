@@ -6,6 +6,7 @@
 #' @param graphs_folder : folder where all graphs are placed (with the / at the end please ^^)
 #' @param alluvial_diagnostic : file name for the alluvial graph
 #' @param N_alluvial : number of graph to represent on a graph
+#' @param join_type : Should we work on the union of species or the intersection
 #' @return a list object containing the following elements:
 #' staby : table of species stability with community assignation for all graphs
 #' stab_n_taxo : table of species stability and taxonomy
@@ -15,18 +16,17 @@
 
 Robust_table_community <- function(graphs_folder,
     alluvial_diagnostic_file, taxo,
-   N_alluvial = 10,
-   join_type = "outer",
-   stability_treshold = 0.6,
-   silhouette_treshold = 0.1
+     N_alluvial = 10,
+     join_type = "outer",
+     stability_treshold = 0.6,
+     silhouette_treshold = 0.1
 )
  {
   files_all = system(paste("ls ", graphs_folder), intern = TRUE)
-
   graph_names = files_all[grepl("_\\d+_community_tagged$", files_all)]
   graph_batch = list()
+  MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
   # Retrieve all graphs in the list :
-
   for(gn in graph_names)
   {
     graph_batch[[gn]] = readRDS(paste0(graphs_folder, gn))
@@ -58,22 +58,71 @@ Robust_table_community <- function(graphs_folder,
   Swkt = Silhouette_to_community(Dwkt, graphbatch_converted[["graph_reference"]])
   stab_n_taxo["Silhouette_walktrap"] = Swkt[row.names(stab_n_taxo),3]
   Nodes_all = graphbatch_converted[["graph_reference"]]
+
   # Select nodes that are attributed to the same community more than stab treshold
   Stab_Nodes = Nodes_all[row.names(stab_n_taxo)[which(stab_n_taxo$Stability_score >= stability_treshold)],]
-  community_table_stab = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
+  community_table_stab = Compute_community_abondance(Stab_Nodes, MGS_abund, taxo)
   name_stab_com = paste0("Robust_community_stability_", stability_treshold)
+
 
   Stab_n_fat_Nodes = Nodes_all[row.names(stab_n_taxo)[which((stab_n_taxo$Stability_score >= stability_treshold) & (stab_n_taxo$Silhouette_walktrap > silhouette_treshold))],]
   community_table_stab_n_fat = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
-  name_stab_n_fat_com = paste0("Robust_community_stability_", stability_treshold, "_silhouette_", Silhouette_walktrap)
+  name_stab_n_fat_com = paste0("Robust_community_stability_", stability_treshold, "_silhouette_", silhouette_treshold)
 
   result_bundle = list(stability = staby)
   result_bundle[["stab_n_taxo"]] = stab_n_taxo
   result_bundle[[name_stab_com]] = community_table_stab
   result_bundle[[name_stab_n_fat_com]] = community_table_stab_n_fat
+
   return(result_bundle)
 }
 
+
+#' @title create_graph_robust_community_tags
+#' @description
+#' create a gephi file for nodes with a robust community attribution
+#' @param fout : where to save the csv tables with nodes with the robust community column
+#' @param abund_by_species : abundance mean group by species or
+#' @param taxo_by_species : taxo grouped at the species level
+#' @param Robust_table_community : Community attribution
+#' @param Nodes tables computed on all samples
+#'
+
+create_graph_robust_community_tags <- function(model_folder,
+  fout,
+  abund_by_species,
+  taxo_by_species,
+  Robust_table_community,
+  Nodes_table_on_all_samples,
+  variability_treshold = NULL
+ )
+{
+    fin_glasso <- model_folder + "/glasso_model_all_samples.gl"
+    Nodes_table_on_all_samples["Robust_community"] = ""
+
+    list_of_species = lapply(commu_table[1,], strsplit, split = "-")
+    # Attribute robust community to the right species
+    # in the node table
+
+    for(com in names(list_of_species))
+    {
+      Nodes_table_on_all_samples[list_of_species[[com]][[1]], "Robust_community"] = com
+    }
+
+    fout_gexf = paste0(fout, ".gexf")
+    fout_csv = paste0(fout, ".csv")
+
+    Nodes <- create_graph(
+                fin_glasso,
+                fout_gexf,
+                abund_by_species,
+                taxo_by_species,
+                community=FALSE,
+                variability_treshold = variability_treshold,
+                additional_info = Nodes_table_on_all_samples$Robust_community)
+
+       write.csv(Nodes, file = fout_csv)
+}
 
 #' @title concordance_table
 #' @description
