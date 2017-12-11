@@ -29,7 +29,9 @@ Gleesso_bootstrap <- function(N_bootstrap,
       stop("the vector of class to stratify by doesn't correspond to the dimension of the abundance matrix")
      }
 
-     nsamp_tab = round(table(stratifying_vector)*fraction)
+     # Convert stratifying vector in character to avoid that the table
+     # function create empty cases for non observed factor levels
+     nsamp_tab = round(table(as.character(stratifying_vector))*fraction)
      which.factor <- function(x){ return(which(stratifying_vector==x))}
      list_ids  = lapply(unique(stratifying_vector), which.factor)
      names(list_ids) = names(nsamp_tab)

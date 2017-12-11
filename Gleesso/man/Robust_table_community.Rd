@@ -13,6 +13,8 @@ Robust_table_community(graphs_folder, alluvial_diagnostic_file, taxo,
 
 \item{N_alluvial}{: number of graph to represent on a graph}
 
+\item{join_type}{: Should we work on the union of species or the intersection}
+
 \item{alluvial_diagnostic}{: file name for the alluvial graph}
 }
 \value{

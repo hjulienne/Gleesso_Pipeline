@@ -23,22 +23,25 @@ Robust_table_community <- function(graphs_folder,
 )
  {
   files_all = system(paste("ls ", graphs_folder), intern = TRUE)
-  graph_names = files_all[grepl("_\\d+_community_tagged$", files_all)]
+
+  graph_names = files_all[grepl("\\d+_community_tagged$", files_all)]
   graph_batch = list()
   MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
+  print(graph_names)
   # Retrieve all graphs in the list :
   for(gn in graph_names)
   {
     graph_batch[[gn]] = readRDS(paste0(graphs_folder, gn))
   }
   Ngraphs = length(graph_names)
-  name_ref =  paste0(graphs_folder, files_all[grepl("_all_samples_community_tagged$", files_all)])
+  name_ref =  paste0(graphs_folder, files_all[grepl("_all_samples__community_tagged$", files_all)])
   graph_ref = readRDS(name_ref)
   graphbatch_converted = batch_converter(graph_batch, graph_ref)
   # plot an alluvial plot
 
   id_repr_allu = sample(Ngraphs, N_alluvial)
   graph_labels = c("graph reference", paste("bootstrap", id_repr_allu))
+
   svg(alluvial_diagnostic_file)
   print("#########################")
   print("# Plotting alluvial plot")
@@ -50,9 +53,10 @@ Robust_table_community <- function(graphs_folder,
                 taxo[row.names(staby), c("genus","family","order","class", "superkingdom", "superkingdom")])
 
   # Compute silhouette based on the walktrap distance between nodes
-  graph_all_fn = files_all[grep("all_samples.gl.RDS$", files_all)]
+  graph_all_fn = files_all[grep("all_samples_.gl.RDS$", files_all)]
   gphref_igraph = readRDS(paste0(graphs_folder, graph_all_fn))
   pos.grph = delete.edges(gphref_igraph, which(E(gphref_igraph)$weight < 0))
+
   print("walktrap distance computing")
   Dwkt = walktrap_distance(pos.grph, 9)
   Swkt = Silhouette_to_community(Dwkt, graphbatch_converted[["graph_reference"]])
@@ -63,7 +67,6 @@ Robust_table_community <- function(graphs_folder,
   Stab_Nodes = Nodes_all[row.names(stab_n_taxo)[which(stab_n_taxo$Stability_score >= stability_treshold)],]
   community_table_stab = Compute_community_abondance(Stab_Nodes, MGS_abund, taxo)
   name_stab_com = paste0("Robust_community_stability_", stability_treshold)
-
 
   Stab_n_fat_Nodes = Nodes_all[row.names(stab_n_taxo)[which((stab_n_taxo$Stability_score >= stability_treshold) & (stab_n_taxo$Silhouette_walktrap > silhouette_treshold))],]
   community_table_stab_n_fat = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
@@ -86,21 +89,21 @@ Robust_table_community <- function(graphs_folder,
 #' @param taxo_by_species : taxo grouped at the species level
 #' @param Robust_table_community : Community attribution
 #' @param Nodes tables computed on all samples
-#'
-
+#' @export
 create_graph_robust_community_tags <- function(model_folder,
   fout,
   abund_by_species,
   taxo_by_species,
+  model_tag,
   Robust_table_community,
   Nodes_table_on_all_samples,
   variability_treshold = NULL
  )
 {
-    fin_glasso <- model_folder + "/glasso_model_all_samples.gl"
+    fin_glasso <- paste0(model_folder,"/glasso_model_",model_tag,"_all_samples.gl")
     Nodes_table_on_all_samples["Robust_community"] = ""
 
-    list_of_species = lapply(commu_table[1,], strsplit, split = "-")
+    list_of_species = lapply(Robust_table_community[1,], strsplit, split = "-")
     # Attribute robust community to the right species
     # in the node table
 
@@ -111,7 +114,7 @@ create_graph_robust_community_tags <- function(model_folder,
 
     fout_gexf = paste0(fout, ".gexf")
     fout_csv = paste0(fout, ".csv")
-
+    print("node attribution done, regenerating the graph : ")
     Nodes <- create_graph(
                 fin_glasso,
                 fout_gexf,
@@ -122,6 +125,7 @@ create_graph_robust_community_tags <- function(model_folder,
                 additional_info = Nodes_table_on_all_samples$Robust_community)
 
        write.csv(Nodes, file = fout_csv)
+       return(Nodes)
 }
 
 #' @title concordance_table
@@ -345,9 +349,10 @@ community_converter <- function(nodes_graph1,
 batch_converter <- function(graph_batch, graph_ref)
 {
     N_graph <- length(graph_batch)
-
+    print(N_graph)
     for(cgraph in  1:N_graph)
     {
+      print(cgraph)
         converting_info = community_converter(graph_ref, graph_batch[[cgraph]])
         spc_to_convert =  which(rownames(graph_batch[[cgraph]]) %in% converting_info$species_intersection)
         graph_batch[[cgraph]]$walktrap_community_bkup = graph_batch[[cgraph]]$walktrap_community
