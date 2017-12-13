@@ -397,8 +397,6 @@ Compute_community_abondance <- function(Nodes,
                 print(spc)
                 print("represented by:")
                  print(MGS_rpr)
-                 print("complete list")
-                 print(MGS_in_c)
                 if(!is.null(contrast)){
                     ab_h <- as.numeric(as.character(abundance_by_comm[(which(contrast)+2),  MGS_rpr]))
                     ab_l <- as.numeric(as.character(abundance_by_comm[(which(!contrast)+2), MGS_rpr]))
