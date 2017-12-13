@@ -4,12 +4,12 @@
 \alias{Compute_graph}
 \title{Compute Glasso}
 \usage{
-Compute_graph(MGS_abundance, contrast_vector, fout,
+Compute_graph(MGS_abundance, selection_vector, fout,
   abundance_treshold = 10^-7, occurence_treshold = 0.05, nlambda = 20,
   lambda.min.ratio = 0.1, lambda = NULL, rep.num = 20)
 }
 \arguments{
-\item{contrast_vector}{: a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)}
+\item{selection_vector}{: a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)}
 
 \item{MGS_abundance:}{The Metagenomic species abundance table}
 
@@ -31,5 +31,5 @@ Compute_graph(MGS_abundance, contrast_vector, fout,
 }
 \description{
 Compute the Glasso model from the MGS abundances on individuals with a true value in the
-contrast vector.
+selection vector.
 }

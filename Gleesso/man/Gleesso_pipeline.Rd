@@ -5,7 +5,7 @@
 \title{Pipeline launcher}
 \usage{
 Gleesso_pipeline(data_folder, MGS_file, taxo_file, model_folder, graph_folder,
-  contrast_vector, tag_model, tag_graph, community = TRUE, nlambda = 20,
+  selection_vector, tag_model, tag_graph, community = TRUE, nlambda = 20,
   lambda.min.ratio = 0.1, occurence_treshold = 0.05,
   abundance_treshold = 10^-7, variability_treshold = NULL,
   analysis_step = NULL, species_mode = TRUE)
@@ -13,7 +13,7 @@ Gleesso_pipeline(data_folder, MGS_file, taxo_file, model_folder, graph_folder,
 \arguments{
 \item{data_folder}{: where the community abundance table will be written}
 
-\item{contrast_vector}{: a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)}
+\item{selection_vector}{: a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)}
 
 \item{tag_model}{: a tag that will be inserted in output file to recognize the model parameter}
 

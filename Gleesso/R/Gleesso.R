@@ -6,7 +6,7 @@
 #' @param MGS_file: The Metagenomic species abundance file in the RDS format
 #' @param model_folder: where to save the graphical Lasso model object (output of the spiec.easi function)
 #' @param graph_folder: where the graphical representation of the model will be saved (in the gephi format)
-#' @param contrast_vector : a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)
+#' @param selection_vector : a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)
 #' @param tag_model : a tag that will be inserted in output file to recognize the model parameter
 #' @param tag_graph : a tag that will be inserted in output file to recognize the graph
 #' @param community: Should the community structure be calculated?
@@ -22,7 +22,7 @@ Gleesso_pipeline <- function(data_folder,
                              MGS_file, taxo_file,
                              model_folder,
                              graph_folder,
-                             contrast_vector,
+                             selection_vector,
                              tag_model, tag_graph,
                              community = TRUE ,
                              nlambda = 20,
@@ -103,7 +103,7 @@ Gleesso_pipeline <- function(data_folder,
     if(analysis_step <= 1)
     {
         fout = model_folder + "/glasso_model_" + tag_model+ ".gl"
-        Compute_graph(abund_by_species, contrast_vector, fout, nlambda=nlambda, lambda.min.ratio=lambda.min.ratio, abundance_treshold = abundance_treshold, occurence_treshold = occurence_treshold)
+        Compute_graph(abund_by_species, selection_vector, fout, nlambda=nlambda, lambda.min.ratio=lambda.min.ratio, abundance_treshold = abundance_treshold, occurence_treshold = occurence_treshold)
     }
 
     # save and write network
@@ -130,17 +130,13 @@ Gleesso_pipeline <- function(data_folder,
     print("########Ending Gleesso analysis##########")
 }
 
-
-
-
-
 #' @title Compute Glasso
 #' @description
 #' Compute the Glasso model from the MGS abundances on individuals with a true value in the
-#' contrast vector.
+#' selection vector.
 #' @param MGS_abundance: The Metagenomic species abundance table
 #' @param fout: where to save the model object
-#' @param contrast_vector : a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)
+#' @param selection_vector : a boolean vector to select a subset of the cohort (the model will be infered on samples with a TRUE value)
 #' @param community: Should the community structure be calculated?
 #' @param nlambda: Number of regularisation parameter that will be tested (see huge::huge() documentation)
 #' @param lambda.min.ratio: the smallest value of lambda as a fraction of its maximum (see huge::huge() documentation)
@@ -151,7 +147,7 @@ Gleesso_pipeline <- function(data_folder,
 #' @export
 
 Compute_graph <- function(MGS_abundance,
-                          contrast_vector,
+                          selection_vector,
                           fout,
                           abundance_treshold=10^-7,
                           occurence_treshold = 0.05,
@@ -161,9 +157,9 @@ Compute_graph <- function(MGS_abundance,
                           rep.num =20)
 {
 
-    mgs_tp = as.data.frame(MGS_abundance[, which(contrast_vector)])
+    mgs_tp = as.data.frame(MGS_abundance[, which(selection_vector)])
 
-    print("Number of patient in the contrast vector:")
+    print("Number of patient in the selection vector:")
     nb_pat <- dim(mgs_tp)[2]
     print(nb_pat)
     print("mgs_tp")
@@ -316,6 +312,7 @@ create_graph <- function(
             abondance = prevalence[colnames(se.gl$data)],
             species =  sapply(species_taxo[nodes_cag,]$species, remove_xml_char),
             genus =  species_taxo[nodes_cag,]$genus,
+            family = species_taxo[nodes_cag,]$family,
             phylum = species_taxo[nodes_cag,]$phylum,
             class = species_taxo[nodes_cag,]$class,
             order = species_taxo[nodes_cag,]$order
@@ -338,7 +335,7 @@ create_graph <- function(
     edges_viz_att <- data.frame(WGH = abs(igraph::E(ig.gl)$weight), COLOR = igraph::E(ig.gl)$color)
     row.names(nodes_viz_att) <- remove_xml_char(row.names(nodes_viz_att))
     Nodes$NAME <- remove_xml_char(Nodes$NAME)
-    print('allmost here')
+    print('almost there')
     write.csv(nodes_viz_att, file=paste(file_output,"_nodes.csv", sep=''))
     write.csv(edges_viz_att, file=paste(file_output,"_edges.csv", sep=''))
     saveRDS(ig.gl, file = paste(file_output, '.gl.RDS', sep=""))

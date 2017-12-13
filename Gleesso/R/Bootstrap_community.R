@@ -27,7 +27,7 @@ Robust_table_community <- function(graphs_folder,
   graph_names = files_all[grepl("\\d+_community_tagged$", files_all)]
   graph_batch = list()
   MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
-  print(graph_names)
+
   # Retrieve all graphs in the list :
   for(gn in graph_names)
   {
@@ -122,7 +122,7 @@ create_graph_robust_community_tags <- function(model_folder,
                 taxo_by_species,
                 community=FALSE,
                 variability_treshold = variability_treshold,
-                additional_info = Nodes_table_on_all_samples$Robust_community)
+                additional_info = Nodes_table_on_all_samples[,'Robust_community'])
 
        write.csv(Nodes, file = fout_csv)
        return(Nodes)
@@ -349,10 +349,10 @@ community_converter <- function(nodes_graph1,
 batch_converter <- function(graph_batch, graph_ref)
 {
     N_graph <- length(graph_batch)
-    print(N_graph)
+
     for(cgraph in  1:N_graph)
     {
-      print(cgraph)
+
         converting_info = community_converter(graph_ref, graph_batch[[cgraph]])
         spc_to_convert =  which(rownames(graph_batch[[cgraph]]) %in% converting_info$species_intersection)
         graph_batch[[cgraph]]$walktrap_community_bkup = graph_batch[[cgraph]]$walktrap_community
@@ -397,8 +397,7 @@ stability_index_converter <- function(graph_list, join_type = "outer")
         community_accross_graphs[name_col] = -1
         community_accross_graphs[row.names(graph_list[[grp]]), name_col] = graph_list[[grp]]$walktrap_community
     }
-    print(dim(stability_index))
-    print(dim(community_accross_graphs))
+
 
     stability_index['Stability_score'] = -1
     stability_index['Stability_score'] = unlist(lapply(apply(community_accross_graphs, 1, table), max)) / N_graph

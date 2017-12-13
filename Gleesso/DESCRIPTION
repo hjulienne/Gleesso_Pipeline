@@ -16,7 +16,8 @@ Depends: R (>= 3.2.3),
 	cluster,
 	expm,
 	ape,
-	ade4
+	ade4,
+	xtable
 License: https://cran.r-project.org/web/licenses/GPL-3
 Encoding: UTF-8
 LazyData: true
