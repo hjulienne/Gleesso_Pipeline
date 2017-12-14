@@ -30,4 +30,8 @@ install_github("hjulienne/Gleesso_Pipeline/Gleesso")
 
 # Usage example
 
-Use the Gleesso_test.R script as a starter
+Consult the Gleesso walkthrough notebook :
+
+https://github.com/hjulienne/Gleesso_Pipeline/blob/master/Gleesso_walkthrough/Gleesso_walkthrough.ipynb
+
+
