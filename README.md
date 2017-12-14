@@ -18,6 +18,7 @@ The dependency packages phyloseq and SPIEC-EASI (https://github.com/zdk123/Spiec
 The following code lines install both the dependencies and the gleesso package.
 
 ```r
+install.packages('devtools')
 library(devtools)
 
 source("https://bioconductor.org/biocLite.R")
