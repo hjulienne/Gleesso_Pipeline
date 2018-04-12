@@ -33,8 +33,9 @@ Gleesso_bootstrap <- function(N_bootstrap,
      # function create empty cases for non observed factor levels
      nsamp_tab = round(table(as.character(stratifying_vector))*fraction)
      which.factor <- function(x){ return(which(stratifying_vector==x))}
-     list_ids  = lapply(unique(stratifying_vector), which.factor)
-     names(list_ids) = names(nsamp_tab)
+     label_classes <- sort(unique(stratifying_vector))
+     list_ids  = lapply(label_classes, which.factor)
+     names(list_ids) = label_classes
   }
 
   # iterate bootstraps
