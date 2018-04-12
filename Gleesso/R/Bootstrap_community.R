@@ -35,6 +35,7 @@ Robust_table_community <- function(graphs_folder,
   }
   Ngraphs = length(graph_names)
   name_ref =  paste0(graphs_folder, files_all[grepl("_all_samples__community_tagged$", files_all)])
+  print(name_ref)
   graph_ref = readRDS(name_ref)
   graphbatch_converted = batch_converter(graph_batch, graph_ref)
   # plot an alluvial plot

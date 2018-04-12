@@ -152,14 +152,21 @@ return(table_list)
 #' A function to draw a barplot of the mean abundance of community accross samples
 #' @param abund : table of community abundance accross samples
 #' @export
-draw_community_total_abundance <- function(abund)
+draw_community_total_abundance <- function(abund,color_map = NULL)
 {
     D = colMeans(apply(abund,2,  as.numeric))
     D = data.frame(D)
 
     D['community'] = rownames(D)
     D$community = factor(D$community, levels = sort(unique(D$community), decreasing=TRUE))
+
+    if(is.null(color_map))
+    {
     p = ggplot(D, aes(x= community, weight=D))+ geom_bar() + coord_flip() + ylab('mean abundance')
+    } else{
+    p = ggplot(D, aes(x= community, weight=D, fill=community))+ scale_fill_manual(values=color_map)+ geom_bar() + coord_flip() + ylab('mean abundance')
+  }
+
 return(p)
 }
 
