@@ -34,34 +34,7 @@ Gleesso_pipeline <- function(data_folder,
                              species_mode = TRUE
                              )
 {
-    # determine step of the analysis:
-    if(is.null(analysis_step)){
-        if(!file.exists(data_folder+'/'+"taxo_by_species.rds"))
-        {
-            analysis_step = 0
-        }
-        else
-        {
-            if(!file.exists(model_folder+'/glasso_model_'+ tag_model+'.gl'))
-            {
-                analysis_step = 1
-            }
-            else
-            {
-                if(!file.exists(graph_folder+'/graph_'+tag_model+ tag_graph+'.gexf'))
-                {
-                    analysis_step = 2
-                }
-                else
-                {
-                    if(!file.exists(data_folder+'/community_abundance_'+tag_model+ tag_graph+'.gexf'))
-                    {
-                        analysis_step = 3
-                    }
-                }
-            }
-        }
-    }
+  DetermineAnalysisStep(data_folder, model_folder, graph_folder, tag_model, tag_graph)
     ##Compute steps if undone#
     ##
     print("Starting Gleesso analysis for:")
@@ -129,6 +102,41 @@ Gleesso_pipeline <- function(data_folder,
     }
     print("########Ending Gleesso analysis##########")
 }
+
+
+DetermineAnalysisStep <- function(data_folder, model_folder, graph_folder, tag_model, tag_graph)
+{
+if(is.null(analysis_step)){
+    if(!file.exists(data_folder+'/'+"taxo_by_species.rds"))
+    {
+        analysis_step = 0
+    }
+    else
+    {
+        if(!file.exists(model_folder+'/glasso_model_'+ tag_model+'.gl'))
+        {
+            analysis_step = 1
+        }
+        else
+        {
+            if(!file.exists(graph_folder+'/graph_'+tag_model+ tag_graph+'.gexf'))
+            {
+                analysis_step = 2
+            }
+            else
+            {
+                if(!file.exists(data_folder+'/community_abundance_'+tag_model+ tag_graph+'.gexf'))
+                {
+                    analysis_step = 3
+                }
+            }
+        }
+    }
+}
+return(analysis_step)
+}
+
+
 
 #' @title Compute Glasso
 #' @description
