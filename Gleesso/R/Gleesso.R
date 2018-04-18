@@ -34,9 +34,9 @@ Gleesso_pipeline <- function(data_folder,
                              species_mode = TRUE
                              )
 {
-  DetermineAnalysisStep(data_folder, model_folder, graph_folder, tag_model, tag_graph)
     ##Compute steps if undone#
     ##
+    analysis_step <- DetermineAnalysisStep(data_folder, model_folder, graph_folder, tag_model, tag_graph, analysis_step)
     print("Starting Gleesso analysis for:")
     print("#################   "+tag_model+"_"+ tag_graph+"   #################")
     print("At analysis step :"+ as.character(analysis_step))
@@ -61,7 +61,6 @@ Gleesso_pipeline <- function(data_folder,
         saveRDS(object = taxo_by_species, file = fout)
         fout = data_folder+ "/abund_by_species.rds"
         saveRDS(object = abund_by_species, file = fout)
-
     }
     else
     {
@@ -104,36 +103,36 @@ Gleesso_pipeline <- function(data_folder,
 }
 
 
-DetermineAnalysisStep <- function(data_folder, model_folder, graph_folder, tag_model, tag_graph)
+DetermineAnalysisStep <- function(data_folder, model_folder, graph_folder, tag_model, tag_graph, analysis_step)
 {
-if(is.null(analysis_step)){
-    if(!file.exists(data_folder+'/'+"taxo_by_species.rds"))
-    {
-        analysis_step = 0
-    }
-    else
-    {
-        if(!file.exists(model_folder+'/glasso_model_'+ tag_model+'.gl'))
+    if(is.null(analysis_step)){
+        if(!file.exists(data_folder+'/'+"taxo_by_species.rds"))
         {
-            analysis_step = 1
+            analysis_step = 0
         }
         else
         {
-            if(!file.exists(graph_folder+'/graph_'+tag_model+ tag_graph+'.gexf'))
+            if(!file.exists(model_folder+'/glasso_model_'+ tag_model+'.gl'))
             {
-                analysis_step = 2
+                analysis_step = 1
             }
             else
             {
-                if(!file.exists(data_folder+'/community_abundance_'+tag_model+ tag_graph+'.gexf'))
+                if(!file.exists(graph_folder+'/graph_'+tag_model+ tag_graph+'.gexf'))
                 {
-                    analysis_step = 3
+                    analysis_step = 2
+                }
+                else
+                {
+                    if(!file.exists(data_folder+'/community_abundance_'+tag_model+ tag_graph+'.gexf'))
+                    {
+                        analysis_step = 3
+                    }
                 }
             }
         }
     }
-}
-return(analysis_step)
+    return(analysis_step)
 }
 
 
@@ -196,9 +195,29 @@ Compute_graph <- function(MGS_abundance,
     return(0)
 }
 
-
-
-
+# Helper Function
+# Returns the optimal inverse covariance from the Huge object
+#
+GetOptimalInverseCovariance <- function(se.gl, variability_treshold=NULL)
+{
+    if(is.null(variability_treshold))
+    {
+        icov_mat = se.gl$opt.icov
+    }
+    else
+    {
+        # get inverse covariance just after the variability_treshold
+        id_lbd <- max(which(se.gl$variability < variability_treshold))
+        var_graph <- se.gl.tp$variability[id_lbd]
+        lbd <- se.gl.tp$lambda[id_lbd]
+        icov_mat <- se.gl.tp$icov[[id_lbd]]
+        print("|||||||||||||| Graph parameters |||||||||||||||" )
+        print("Lambda: " + as.character(lbd))
+        print("Variability: " + as.character(var_graph))
+        print('|||||||||||||||||||||||||||||||||||||||||||||||')
+    }
+    return(as.matrix(icov_mat))
+}
 
 
 #' @title Create a gephi format graph from the graphical Lasso  model
@@ -227,29 +246,14 @@ create_graph <- function(
                          spinglass_opt= FALSE,
                          variability_treshold = NULL)
 {
+    # retrieve Huge model object
     se.gl = get(load(file_input))
     #Compute percentage where the MGS is present
     occurence <- round(apply(MGS_by_taxo_species > 10^-7, 1, mean)*100)
     # Compose abondance of the MGS only in individuals where it is present
     prevalence <- round(apply(MGS_by_taxo_species , 1, mean_when_present)*100*10^6)
-    # remove diagonal terms
-    if(is.null(variability_treshold))
-    {
-        icov_mat = se.gl$opt.icov
-    }
-    else
-    {
-        id_lbd <- max(which(se.gl$variability < variability_treshold))
-        var_graph <- se.gl.tp$variability[id_lbd]
-        lbd <- se.gl.tp$lambda[id_lbd]
-        icov_mat <- se.gl.tp$icov[[id_lbd]]
-        print("|||||||||||||| Graph parameters |||||||||||||||" )
-        print("Lambda: " + as.character(lbd))
-        print("Variability: " + as.character(var_graph))
-        print('|||||||||||||||||||||||||||||||||||||||||||||||')
-    }
 
-    icov_mat = as.matrix(icov_mat)
+    icov_mat = GetOptimalInverseCovariance(se.gl, variability_treshold)
     diag(icov_mat) = 0
     nodes_cag = colnames(se.gl$data)# useful only in CAG mode (not in species aggregation mode)
 
