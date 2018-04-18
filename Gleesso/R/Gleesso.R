@@ -259,7 +259,7 @@ create_graph <- function(
 
     cnames <- sapply(species_taxo[colnames(se.gl$data), "annot"], remove_xml_char)
 
-        dimnames(icov_mat) = list(cnames, cnames)
+    dimnames(icov_mat) = list(cnames, cnames)
 
     tnames <- sapply(rownames(species_taxo), remove_xml_char)
     rownames(species_taxo) <- tnames
@@ -280,16 +280,10 @@ create_graph <- function(
         pos.grph <- igraph::delete.edges(ig.gl, which(igraph::E(ig.gl)$weight < 0 ))
 
         print("###### Computing other community algorithm ######")
-
-        btw_com <- igraph::edge.betweenness.community(pos.grph,weights = igraph::E(pos.grph)$weight)
         walktrap.comm <- opt_walktrap(pos.grph) #walktrap.community(pos.grph, weight = E(pos.grph)$weight)
-
 
         print("##### Modularity Walktrap:")
         print(igraph::modularity(walktrap.comm), weights =  igraph::E(pos.grph)$weight)
-
-        print("Modularity edge betweness:")
-        print(igraph::modularity(btw_com), weights =  igraph::E(pos.grph)$weight)
 
         igraph::V(ig.gl)[walktrap.comm$names]$walk_com <- walktrap.comm$membership
         walktrap.comm <- igraph::walktrap.community(pos.grph, weight = -igraph::E(pos.grph)$weight)
@@ -331,7 +325,7 @@ create_graph <- function(
         )
 
     }
-    # Add example of profile
+    # Add random example of profile
     for( c in sample(colnames(MGS_by_taxo_species),10))
     {
         nodes_viz_att[c]= round(MGS_by_taxo_species[nodes_cag,c]*10^8)
@@ -402,7 +396,6 @@ Compute_community_abondance <- function(Nodes,
                 #_ get track of the integer index of the community for further calculation
 
                 abundance_by_comm[setdiff(row.names(abundance_by_comm), c('Community_composition', "Community_pval", "community_index") ), MGS_rpr] <- apply(abundance[MGS_in_c,], 2, sum, na.rm=TRUE)
-
                 abundance_by_comm[1, MGS_rpr] <- paste(MGS_in_c, collapse='-')
 
                 print("Community number")
