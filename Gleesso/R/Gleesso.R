@@ -208,15 +208,33 @@ GetOptimalInverseCovariance <- function(se.gl, variability_treshold=NULL)
     {
         # get inverse covariance just after the variability_treshold
         id_lbd <- max(which(se.gl$variability < variability_treshold))
-        var_graph <- se.gl.tp$variability[id_lbd]
-        lbd <- se.gl.tp$lambda[id_lbd]
-        icov_mat <- se.gl.tp$icov[[id_lbd]]
+        var_graph <- se.gl$variability[id_lbd]
+        lbd <- se.gl$lambda[id_lbd]
+        icov_mat <- se.gl$icov[[id_lbd]]
         print("|||||||||||||| Graph parameters |||||||||||||||" )
         print("Lambda: " + as.character(lbd))
         print("Variability: " + as.character(var_graph))
         print('|||||||||||||||||||||||||||||||||||||||||||||||')
     }
     return(as.matrix(icov_mat))
+}
+
+ComputeCommunityMembership <- function(ig.gl)
+{
+    con.comp <- igraph::clusters(ig.gl)
+    con.grph <- igraph::induced_subgraph(ig.gl, con.comp$membership==con.comp$membership[which.max(con.comp$csize)])
+
+    pos.grph <- igraph::delete.edges(ig.gl, which(igraph::E(ig.gl)$weight < 0 ))
+
+    print("###### Computing other community algorithm ######")
+    walktrap.comm <- opt_walktrap(pos.grph) #walktrap.community(pos.grph, weight = E(pos.grph)$weight)
+
+    print("##### Modularity Walktrap:")
+    print(igraph::modularity(walktrap.comm), weights =  igraph::E(pos.grph)$weight)
+    print(walktrap.comm)
+
+    igraph::V(ig.gl)[walktrap.comm$names]$walk_com <- walktrap.comm$membership
+    return(ig.gl)
 }
 
 
@@ -274,19 +292,7 @@ create_graph <- function(
 
     if(community==TRUE)
     {
-        con.comp <- igraph::clusters(ig.gl)
-        con.grph <- igraph::induced_subgraph(ig.gl, con.comp$membership==con.comp$membership[which.max(con.comp$csize)])
-
-        pos.grph <- igraph::delete.edges(ig.gl, which(igraph::E(ig.gl)$weight < 0 ))
-
-        print("###### Computing other community algorithm ######")
-        walktrap.comm <- opt_walktrap(pos.grph) #walktrap.community(pos.grph, weight = E(pos.grph)$weight)
-
-        print("##### Modularity Walktrap:")
-        print(igraph::modularity(walktrap.comm), weights =  igraph::E(pos.grph)$weight)
-
-        igraph::V(ig.gl)[walktrap.comm$names]$walk_com <- walktrap.comm$membership
-        walktrap.comm <- igraph::walktrap.community(pos.grph, weight = -igraph::E(pos.grph)$weight)
+        ig.gl <- ComputeCommunityMembership(ig.gl)
 
         nodes_viz_att <- data.frame(
             occurence = occurence[colnames(se.gl$data)],

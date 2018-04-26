@@ -19,12 +19,14 @@ Robust_table_community <- function(graphs_folder,
      N_alluvial = 10,
      join_type = "outer",
      stability_treshold = 0.6,
-     silhouette_treshold = 0.1
+     silhouette_treshold = 0.1,
+     var=NULL
 )
  {
+     #Retrieve all graphs folders
   files_all = system(paste("ls ", graphs_folder), intern = TRUE)
-
-  graph_names = files_all[grepl("\\d+_community_tagged$", files_all)]
+  pattern = paste0("\\d+_", var, "_community_tagged$")
+  graph_names = files_all[grepl(pattern, files_all)]
   graph_batch = list()
   MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
 
@@ -34,7 +36,9 @@ Robust_table_community <- function(graphs_folder,
     graph_batch[[gn]] = readRDS(paste0(graphs_folder, gn))
   }
   Ngraphs = length(graph_names)
-  name_ref =  paste0(graphs_folder, files_all[grepl("_all_samples__community_tagged$", files_all)])
+  pattern = paste0("_all_samples_", var, "_community_tagged$")
+
+  name_ref =  paste0(graphs_folder, files_all[grepl(pattern, files_all)])
   print(name_ref)
   graph_ref = readRDS(name_ref)
   graphbatch_converted = batch_converter(graph_batch, graph_ref)
@@ -54,7 +58,8 @@ Robust_table_community <- function(graphs_folder,
                 taxo[row.names(staby), c("genus","family","order","class", "superkingdom", "superkingdom")])
 
   # Compute silhouette based on the walktrap distance between nodes
-  graph_all_fn = files_all[grep("all_samples_.gl.RDS$", files_all)]
+  pattern = paste0("all_samples_", 0.1, ".gl.RDS$")
+  graph_all_fn = files_all[grep(pattern, files_all)]
   gphref_igraph = readRDS(paste0(graphs_folder, graph_all_fn))
   pos.grph = delete.edges(gphref_igraph, which(E(gphref_igraph)$weight < 0))
 
@@ -107,12 +112,12 @@ create_graph_robust_community_tags <- function(model_folder,
     list_of_species = lapply(Robust_table_community[1,], strsplit, split = "-")
     # Attribute robust community to the right species
     # in the node table
-
+    nodes= row.names(Nodes_table_on_all_samples)
     for(com in names(list_of_species))
     {
       Nodes_table_on_all_samples[list_of_species[[com]][[1]], "Robust_community"] = com
     }
-
+    Nodes_table_on_all_samples = Nodes_table_on_all_samples[nodes,]
     fout_gexf = paste0(fout, ".gexf")
     fout_csv = paste0(fout, ".csv")
     print("node attribution done, regenerating the graph : ")
