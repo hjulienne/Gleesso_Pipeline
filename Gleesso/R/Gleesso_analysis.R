@@ -80,11 +80,11 @@ community_contrast_dashboard <- function(community_table,
 
     if(is.null(color_vect))
     {
-        p = p +geom_violin(fill='cornflowerblue')  +geom_boxplot(fill="gray12",notch=TRUE, width=0.4)+ theme(legend.position="none",strip.text.x = element_text(size = 7))  + xlab('') + ylab('log10(abundance + 1e-8)') #+ geom_jitter(width=0.5,alpha=0.4,shape=1,color="blue")
+        p = p +geom_violin(fill='cornflowerblue')  +geom_boxplot(fill="gray12",notch=TRUE, width=0.6)+ theme(legend.position="none",strip.text.x = element_text(size = 7))  + xlab('') + ylab('log10(abundance + 1e-8)') #+ geom_jitter(width=0.5,alpha=0.4,shape=1,color="blue")
     }
     else
     {
-        p = p + geom_violin(aes(fill = get(contrast_name)))  +geom_boxplot(fill="gray12",notch=TRUE, width=0.4)+ theme(legend.position="none",strip.text.x = element_text(size = 7))  + xlab('') + ylab('log10(abundance + 1e-8)') #+ geom_jitter(width=0.5,alpha=0.4,shape=1,color="blue")
+        p = p + geom_violin(aes(fill = get(contrast_name)))  +geom_boxplot(fill="gray12",notch=TRUE, width=0.6)+ theme(legend.position="none",strip.text.x = element_text(size = 7))  + xlab('') + ylab('log10(abundance + 1e-8)') #+ geom_jitter(width=0.5,alpha=0.4,shape=1,color="blue")
     }
 
     p = p + facet_wrap(~ variable, scales='free',labeller=labeller(variable=label_with_pval),nrow=nrow)
