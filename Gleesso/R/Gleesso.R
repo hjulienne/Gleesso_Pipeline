@@ -609,7 +609,7 @@ generate_annotation <- function(taxo)
 generate_annotation_CAG_level <- function(taxo)
 {
 
-    taxo[,'annot'] = paste(taxo[,'annot'], rownames(taxo))
+    taxo[,'annot'] = paste(taxo[,'annot'], rownames(taxo), sep="_")
     taxo$annot = sapply(taxo$annot, remove_xml_char)
     #row.names(taxo) = taxo$annot
     return(taxo)

@@ -113,7 +113,7 @@ create_graph_robust_community_tags <- function(model_folder,
       Nodes_table_on_all_samples[list_of_species[[com]][[1]], "Robust_community"] = com
     }
 
-    fout_gexf = paste0(fout, ".gexf")
+    fout_gexf = fout
     fout_csv = paste0(fout, ".csv")
     print("node attribution done, regenerating the graph : ")
     Nodes <- create_graph(
