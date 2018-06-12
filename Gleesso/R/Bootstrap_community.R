@@ -23,67 +23,71 @@ Robust_table_community <- function(graphs_folder,
      var=NULL
 )
  {
-     #Retrieve all graphs folders
-  files_all = system(paste("ls ", graphs_folder), intern = TRUE)
-  pattern = paste0("\\d+_", var, "_community_tagged$")
-  graph_names = files_all[grepl(pattern, files_all)]
-  graph_batch = list()
-  MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
+     #Retrieve list of all bootstraped graph in the specified folder.
+     pattern_graph_files = paste0("\\d+_", var, "_community_tagged$")
+     graph_names = list.files(graphs_folder, pattern= pattern_graph_files)
 
-  # Retrieve all graphs in the list :
-  for(gn in graph_names)
-  {
-    graph_batch[[gn]] = readRDS(paste0(graphs_folder, gn))
-  }
-  Ngraphs = length(graph_names)
-  pattern = paste0("_all_samples_", var, "_community_tagged$")
+     graph_batch = list()
+     MGS_abund = readRDS(paste0(graphs_folder, "abund_by_species.rds"))
 
-  name_ref =  paste0(graphs_folder, files_all[grepl(pattern, files_all)])
-  print(name_ref)
-  graph_ref = readRDS(name_ref)
-  graphbatch_converted = batch_converter(graph_batch, graph_ref)
-  # plot an alluvial plot
+      # Retrieve all graphs object in the list :
+      for(gn in graph_names)
+      {
+        graph_batch[[gn]] = readRDS(paste0(graphs_folder, gn))
+      }
 
-  id_repr_allu = sample(Ngraphs, N_alluvial)
-  graph_labels = c("graph reference", paste("bootstrap", id_repr_allu))
+      Ngraphs = length(graph_names)
+      pattern = paste0("_all_samples_", var, "_community_tagged$")
 
-  svg(alluvial_diagnostic_file)
-  print("#########################")
-  print("# Plotting alluvial plot")
-  parrallel_coord_community(graphbatch_converted[c("graph_reference", names(graphbatch_converted)[id_repr_allu])], graph_labels, join_type = join_type)
-  dev.off()
+      name_ref =  paste0(graphs_folder, list.files(graphs_folder, pattern= pattern))
+      print(name_ref)
 
-  staby = stability_index_converter(graphbatch_converted, join_type = join_type)
-  stab_n_taxo = cbind(staby[!grepl("graph",names(staby))],
-                taxo[row.names(staby), c("genus","family","order","class", "superkingdom", "superkingdom")])
+      graph_ref = readRDS(name_ref)
+      graphbatch_converted = batch_converter(graph_batch, graph_ref)
 
-  # Compute silhouette based on the walktrap distance between nodes
-  pattern = paste0("all_samples_", 0.1, ".gl.RDS$")
-  graph_all_fn = files_all[grep(pattern, files_all)]
-  gphref_igraph = readRDS(paste0(graphs_folder, graph_all_fn))
-  pos.grph = delete.edges(gphref_igraph, which(E(gphref_igraph)$weight < 0))
+      # plot an alluvial plot
+      id_repr_allu = sample(Ngraphs, N_alluvial)
+      graph_labels = c("graph reference", paste("bootstrap", id_repr_allu))
 
-  print("walktrap distance computing")
-  Dwkt = walktrap_distance(pos.grph, 9)
-  Swkt = Silhouette_to_community(Dwkt, graphbatch_converted[["graph_reference"]])
-  stab_n_taxo["Silhouette_walktrap"] = Swkt[row.names(stab_n_taxo),3]
-  Nodes_all = graphbatch_converted[["graph_reference"]]
+      svg(alluvial_diagnostic_file)
+      print("#########################")
+      print("# Plotting alluvial plot")
+      parrallel_coord_community(graphbatch_converted[c("graph_reference", names(graphbatch_converted)[id_repr_allu])], graph_labels, join_type = join_type)
+      dev.off()
 
-  # Select nodes that are attributed to the same community more than stab treshold
-  Stab_Nodes = Nodes_all[row.names(stab_n_taxo)[which(stab_n_taxo$Stability_score >= stability_treshold)],]
-  community_table_stab = Compute_community_abondance(Stab_Nodes, MGS_abund, taxo)
-  name_stab_com = paste0("Robust_community_stability_", stability_treshold)
+      staby = stability_index_converter(graphbatch_converted, join_type = join_type)
+      stab_n_taxo = cbind(staby[!grepl("graph",names(staby))],
+                    taxo[row.names(staby), c("genus","family","order","class", "superkingdom", "superkingdom")])
 
-  Stab_n_fat_Nodes = Nodes_all[row.names(stab_n_taxo)[which((stab_n_taxo$Stability_score >= stability_treshold) & (stab_n_taxo$Silhouette_walktrap > silhouette_treshold))],]
-  community_table_stab_n_fat = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
-  name_stab_n_fat_com = paste0("Robust_community_stability_", stability_treshold, "_silhouette_", silhouette_treshold)
+      # Compute silhouette based on the walktrap distance between nodes
+      # To do so we have to retrieve the igraph representation of the graph
+      pattern_all_sample_igraph = paste0("all_samples_", var, ".gl.RDS$")
+      graph_all_fn = list.files(graphs_folder, pattern= pattern_all_sample_igraph)
+      gphref_igraph = readRDS(paste0(graphs_folder, graph_all_fn))
 
-  result_bundle = list(stability = staby)
-  result_bundle[["stab_n_taxo"]] = stab_n_taxo
-  result_bundle[[name_stab_com]] = community_table_stab
-  result_bundle[[name_stab_n_fat_com]] = community_table_stab_n_fat
+      pos.grph = delete.edges(gphref_igraph, which(E(gphref_igraph)$weight < 0))
 
-  return(result_bundle)
+      print("walktrap distance computing")
+      Dwkt = walktrap_distance(pos.grph, 9)
+      Swkt = Silhouette_to_community(Dwkt, graphbatch_converted[["graph_reference"]])
+      stab_n_taxo["Silhouette_walktrap"] = Swkt[row.names(stab_n_taxo),3]
+      Nodes_all = graphbatch_converted[["graph_reference"]]
+
+      # Select nodes that are attributed to the same community more than stab treshold
+      Stab_Nodes = Nodes_all[row.names(stab_n_taxo)[which(stab_n_taxo$Stability_score >= stability_treshold)],]
+      community_table_stab = Compute_community_abondance(Stab_Nodes, MGS_abund, taxo)
+      name_stab_com = paste0("Robust_community_stability_", stability_treshold)
+
+      Stab_n_fat_Nodes = Nodes_all[row.names(stab_n_taxo)[which((stab_n_taxo$Stability_score >= stability_treshold) & (stab_n_taxo$Silhouette_walktrap > silhouette_treshold))],]
+      community_table_stab_n_fat = Compute_community_abondance(Stab_n_fat_Nodes, MGS_abund, taxo)
+      name_stab_n_fat_com = paste0("Robust_community_stability_", stability_treshold, "_silhouette_", silhouette_treshold)
+
+      result_bundle = list(stability = staby)
+      result_bundle[["stab_n_taxo"]] = stab_n_taxo
+      result_bundle[[name_stab_com]] = community_table_stab
+      result_bundle[[name_stab_n_fat_com]] = community_table_stab_n_fat
+
+      return(result_bundle)
 }
 
 
