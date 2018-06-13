@@ -37,18 +37,18 @@ Gleesso_bootstrap <- function(N_bootstrap,
      list_ids  = lapply(label_classes, which.factor)
      names(list_ids) = label_classes
   }
+  if(is.null(variability_treshold))
+  {
+    tag_graph = paste(c("_", 0.05), collapse = "")
 
+  }
+   else{
+     tag_graph = paste(c("_", variability_treshold), collapse = "")
+   }
   # iterate bootstraps
   for(i in 1:N_bootstrap)
   {
-    if(is.null(variability_treshold))
-    {
-      tag_graph = paste(c("_", 0.05), collapse = "")
 
-    }
-     else{
-       tag_graph = paste(c("_", variability_treshold), collapse = "")
-     }
     tag_model_m = paste(c(tag_model,"_", i ), collapse = "")
 
     # compute sample to work on :
@@ -74,9 +74,9 @@ Gleesso_bootstrap <- function(N_bootstrap,
         variability_treshold=variability_treshold, analysis_step=0, ... )
       }
       # After generating the bootstraps we compute the graph on all samples
-      # The graph on all samples (with the maximum statistical )
+      # The graph on all samples (with the maximum statistical information )
       tag_model_m = paste(c(tag_model,"_all_samples"), collapse = "")
-      tag_graph = paste(c("_", variability_treshold), collapse = "")
+      #tag_graph = paste(c("_", variability_treshold), collapse = "")
       boot_vec = rep(TRUE, N_samples)
       Gleesso_pipeline(community_table_folder,  MGS_file, taxo_file,
          model_folder, graph_folder, boot_vec, tag_model= tag_model_m,

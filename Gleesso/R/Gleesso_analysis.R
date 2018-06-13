@@ -1,4 +1,3 @@
-
 #' @title extract_community_abundance_table
 #' @description
 #' function to handily extract only the abondance of community by
@@ -36,33 +35,8 @@ community_contrast_dashboard <- function(community_table,
     #abund_com[contrast_name] = 0
     #abund_com[,contrast_name] = contrast_vector
 
-    # computing most contrasted communities
-# rank test if the contrast contain only to modality
-    if(length(unique(contrast_vector)) == 2 )
-        {
-            rank_pval <- function(x, contrast_vect )
-            {
-                x= as.numeric(x)
-                class1 = unique(contrast_vect)[1]
-                return(wilcox.test(x[contrast_vect == class1] , x[contrast_vect != class1])$p.value)
-            }
-         pval_vec = sapply(abund_com, rank_pval, contrast_vect = contrast_vector)
-        }
-    else{
-        # kruskal test if the contrast contain only to modality
-        if(length(unique(contrast_vector)) > 2)
-        {
-            pval_vec = c()
-            for(i in lapply(abund_com, kruskal.test, g = contrast_vector))
-                {
-                pval_vec = c(pval_vec, i$p.value)
-            }
+   pval_vec <- contrast_by_community_p_val(contrast_vector, abund_com)
 
-            }
-        else{
-            stop("The contrast vector contains only one modality")
-            }
-        }
    names(pval_vec) = names(community_table)
 
     label_with_pval <- function(var)
@@ -92,8 +66,38 @@ community_contrast_dashboard <- function(community_table,
     return(pval_vec)
 }
 
+contrast_by_community_p_val <-function(contrast_vector, abund_com)
+{
 
+  # computing most contrasted communities
+# rank test if the contrast contain only two modality
+if(length(unique(contrast_vector)) == 2 )
+    {
+        rank_pval <- function(x, contrast_vect )
+        {
+            x= as.numeric(x)
+            class1 = unique(contrast_vect)[1]
+            return(wilcox.test(x[contrast_vect == class1] , x[contrast_vect != class1])$p.value)
+        }
+     pval_vec = sapply(abund_com, rank_pval, contrast_vect = contrast_vector)
+    }
+else{
+    # kruskal test if the contrast contain more than two modality
+    if(length(unique(contrast_vector)) > 2)
+    {
+        pval_vec = c()
+        for(i in lapply(abund_com, kruskal.test, g = contrast_vector))
+            {
+            pval_vec = c(pval_vec, i$p.value)
+        }
 
+        }
+    else{
+        stop("The contrast vector contains only one modality")
+        }
+    }
+return(pval_vec)
+}
 
 #' @title community_taxa_abundance
 #' @description
