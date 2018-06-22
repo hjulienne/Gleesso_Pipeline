@@ -114,6 +114,7 @@ Robust_table_community <- function(graphs_folder,
       svg(alluvial_diagnostic_file)
       print("#########################")
       print("# Plotting alluvial plot")
+
       parrallel_coord_community(graphbatch_converted[c("graph_reference", names(graphbatch_converted)[id_repr_allu])], graph_labels, join_type = join_type)
       dev.off()
 
@@ -214,6 +215,7 @@ merge_species_list_accross_graph <- function(nlist, join_type="inner")
       }
       else{stop("the ways to merge you entered is not valid. Available option are: 'inner' or 'outer'")}
   }
+  return(union_species)
 }
 
 
@@ -325,6 +327,8 @@ community_converter <- function(nodes_graph1,
 
     nodes_graph1 = nodes_graph1[spc,]
     nodes_graph2 = nodes_graph2[spc,]
+    nodes_graph1_com = na.omit(unique(as.character(nodes_graph1$walktrap_community, na.omit)))
+    nodes_graph2_com = na.omit(unique(as.character(nodes_graph2$walktrap_community, na.omit)))
 
     M = inter_community_distance(nodes_graph1, nodes_graph2)
 
@@ -396,7 +400,7 @@ batch_converter <- function(graph_batch, graph_ref)
     graph_ref$walktrap_community = as.numeric(as.factor(graph_ref$walktrap_community))
     graph_ref$walktrap_community[is.na(graph_ref$walktrap_community)] = 0
 
-    # Putting graph reference at the list of graph
+    # Putting graph reference at end the list of graph
     graph_batch[['graph_reference']] = graph_ref
     return(graph_batch)
 }
