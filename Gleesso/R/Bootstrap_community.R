@@ -75,14 +75,13 @@ create_graph_robust_community_tags <- function(model_folder,
 #' @export
 
 Robust_table_community <- function(graphs_folder,
-    alluvial_diagnostic_file, taxo,
-    var=0.05,
-     N_alluvial = 10,
-     join_type = "outer",
-     stability_treshold = 0.6,
-     silhouette_treshold = 0.1,
-
-)
+  alluvial_diagnostic_file, taxo,
+  var=0.05,
+  N_alluvial = 10,
+  join_type = "outer",
+  stability_treshold = 0.6,
+  silhouette_treshold = 0.1
+  )
  {
      #Retrieve list of all bootstraped graph in the specified folder.
      pattern_graph_files = paste0("\\d+_", var, "_community_tagged$")

@@ -129,9 +129,21 @@ community_taxa_abundance <- function(
 
         p_tab = prop.table(xtabs(Nodes$sum_abundance ~ as.character(Nodes[,community_kind]) + unlist(Nodes[,group]), Nodes, na.action=na.exclude), margin=1)
         prevalent_genus = which(apply(p_tab > as.numeric(prevalence_level),2,any))
-        trim_tab = cbind(p_tab[, prevalent_genus], others = apply(p_tab[, -prevalent_genus], 1, sum))
-        long_p_tab =melt(trim_tab)
-        names(long_p_tab)[1:2] = c("community",group)
+        # if there is more than one rare genera some their abundance in one column
+      Ngroup = length(unique(Nodes[, group ]))
+      Nprevalent = length(prevalent_genus)
+
+      if((Ngroup - Nprevalent) >1)
+      {
+      trim_tab = cbind(p_tab[, prevalent_genus],
+                       others = apply(p_tab[,  -prevalent_genus], 1, sum))
+      }else
+      {
+          trim_tab = cbind(p_tab[, prevalent_genus], others = p_tab[,  -prevalent_genus])
+      }
+
+      long_p_tab =melt(trim_tab)
+      names(long_p_tab)[1:2] = c("community",group)
 
         nameo = paste(file_output, group, "relative_barplot.png", sep="_")
 
@@ -143,7 +155,7 @@ community_taxa_abundance <- function(
         p = ggplot(long_p_tab, aes(x= community,fill=get(group), weight=value))
         p= p + geom_bar() + scale_fill_manual(values=pal_col) + theme(legend.text=element_text(size=8))#position="fill")
         p = p + labs(x = "community", y = "", fill= group)  +theme(axis.text.y = element_text(hjust  = 1,angle = 0, size=12)) + coord_flip()
-          print(p)
+        print(p)
         dev.off()
         taxa_ordered_list(p_tab)
         table_list[[group]] <-  p_tab
