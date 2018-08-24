@@ -162,7 +162,7 @@ draw_community_total_abundance <- function(abund,color_map = NULL)
     D = data.frame(D)
 
     D['community'] = rownames(D)
-    D$community = factor(D$community, levels = sort(unique(D$community), decreasing=TRUE))
+    D$community = factor(D$community, levels = sort(as.character(unique(D$community)), decreasing=TRUE))
 
     if(is.null(color_map))
     {
@@ -180,14 +180,25 @@ return(p)
 #'
 #' @param community_table : Community table with the species composition line
 #' @export
-draw_community_total_species_count <- function(community_table)
+draw_community_total_species_count <- function(community_table,color_map = NULL)
 {
   species_list = sapply(community_table[1,], strsplit, '-')
   sp_count = as.data.frame(sapply(species_list, length))
 
   names(sp_count)[1] = "count"
   sp_count['community_name'] = row.names(sp_count)
-  print(ggplot(sp_count, aes(x = community_name, weights= count)) + geom_bar() + coord_flip())
+  sp_count$community_name = factor(sp_count$community_name, levels = sort(as.character(unique(sp_count$community_name)), decreasing=TRUE))
+  if(is.null(color_map))
+  {
+  p = ggplot(sp_count, aes(x = community_name, weights= count)) + geom_bar() + coord_flip()
+    }
+    else
+    {
+    p = ggplot(sp_count, aes(x= community_name, weight=count, fill=community_name))
+    p = p + scale_fill_manual(values=color_map)+ geom_bar() + coord_flip()
+    }
+
+    return(p)
 }
 
 taxa_ordered_list <- function(p_tab)
