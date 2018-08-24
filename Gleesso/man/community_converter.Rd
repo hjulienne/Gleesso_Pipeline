@@ -4,7 +4,7 @@
 \alias{community_converter}
 \title{community_converter}
 \usage{
-community_converter(nodes_graph1, nodes_graph2, join_type = "inner")
+community_converter(nodes_graph1, nodes_graph2)
 }
 \arguments{
 \item{nodes_graph1}{is the table of nodes with the walktrap column properly filled}

@@ -4,7 +4,7 @@
 \alias{draw_community_total_abundance}
 \title{draw community total abundance treshold}
 \usage{
-draw_community_total_abundance(abund)
+draw_community_total_abundance(abund, color_map = NULL)
 }
 \arguments{
 \item{abund}{: table of community abundance accross samples}

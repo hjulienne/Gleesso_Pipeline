@@ -5,8 +5,8 @@
 \title{Community attribution stability table}
 \usage{
 Robust_table_community(graphs_folder, alluvial_diagnostic_file, taxo,
-  N_alluvial = 10, join_type = "outer", stability_treshold = 0.6,
-  silhouette_treshold = 0.1)
+  var = 0.05, N_alluvial = 10, join_type = "outer",
+  stability_treshold = 0.6, silhouette_treshold = 0.1)
 }
 \arguments{
 \item{graphs_folder}{: folder where all graphs are placed (with the / at the end please ^^)}
@@ -16,6 +16,14 @@ Robust_table_community(graphs_folder, alluvial_diagnostic_file, taxo,
 \item{join_type}{: Should we work on the union of species or the intersection}
 
 \item{alluvial_diagnostic}{: file name for the alluvial graph}
+
+\item{var:}{variability treshold used in Gleesso_bootstrap. if NULL was used in
+Gleesso_bootstrap let the default value in this function.}
+
+\item{stability_treshold:}{the stability of a community attribution for a
+specific species is the fraction of bootstraps repetition where it was
+attributed to the same community. If the species stability is below the
+stability_treshold it won't attributed to the robust community.}
 }
 \value{
 a list object containing the following elements:

@@ -213,6 +213,29 @@ draw_community_total_species_count <- function(community_table,color_map = NULL)
     return(p)
 }
 
+#' @title get_CAG_by_community
+#' @description
+#' Return the CAG included in each community as a list
+#' @param community_table : Community table with the species composition line
+#' @param taxofile: path to the taxonomic format in the RDS format
+#' @export
+get_CAG_by_community <- function(community_table, taxofile)
+    {
+    taxo = generate_annotation(readRDS(taxofile))
+    taxo = taxo[taxo$size > 499,]
+    taxo = data.table(taxo)
+
+    setkey(taxo,"annot")
+
+    species_by_community = sapply(community_table['Community_composition',], strsplit, "-")
+    get_CAG <- function(x){return(taxo[x, GU])}
+
+    CAG_by_communities <- lapply(species_by_community, get_CAG)
+
+    return(CAG_by_communities)
+}
+
+
 taxa_ordered_list <- function(p_tab)
 {
     taxa_data = as.data.frame(apply(p_tab, 1, most_present_taxa), stringsAsFactors = FALSE)

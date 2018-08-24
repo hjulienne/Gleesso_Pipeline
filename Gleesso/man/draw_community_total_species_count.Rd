@@ -4,7 +4,7 @@
 \alias{draw_community_total_species_count}
 \title{draw_community_total_species_count}
 \usage{
-draw_community_total_species_count(community_table)
+draw_community_total_species_count(community_table, color_map = NULL)
 }
 \arguments{
 \item{community_table}{: Community table with the species composition line}
