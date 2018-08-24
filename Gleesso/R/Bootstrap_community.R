@@ -7,6 +7,7 @@
 #' @param Robust_table_community : Community attribution
 #' @param Nodes tables computed on all samples
 #' @export
+
 create_graph_robust_community_tags <- function(model_folder,
   fout,
   abund_by_species,
@@ -60,6 +61,12 @@ create_graph_robust_community_tags <- function(model_folder,
 #' @param alluvial_diagnostic : file name for the alluvial graph
 #' @param N_alluvial : number of graph to represent on a graph
 #' @param join_type : Should we work on the union of species or the intersection
+#' @param var: variability treshold used in Gleesso_bootstrap. if NULL was used in
+#'  Gleesso_bootstrap let the default value in this function.
+#' @param stability_treshold: the stability of a community attribution for a
+#' specific species is the fraction of bootstraps repetition where it was
+#' attributed to the same community. If the species stability is below the
+#' stability_treshold it won't attributed to the robust community.
 #' @return a list object containing the following elements:
 #' staby : table of species stability with community assignation for all graphs
 #' stab_n_taxo : table of species stability and taxonomy
@@ -69,11 +76,12 @@ create_graph_robust_community_tags <- function(model_folder,
 
 Robust_table_community <- function(graphs_folder,
     alluvial_diagnostic_file, taxo,
+    var=0.05,
      N_alluvial = 10,
      join_type = "outer",
      stability_treshold = 0.6,
      silhouette_treshold = 0.1,
-     var=NULL
+
 )
  {
      #Retrieve list of all bootstraped graph in the specified folder.
